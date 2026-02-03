@@ -11,7 +11,7 @@ Later we can add router-view here for multiple pages
 </template>
 
 <script setup>
-    import Login from './Login.vue'
+import Login from './views/Login.vue'
 </script>
 
 <style>
