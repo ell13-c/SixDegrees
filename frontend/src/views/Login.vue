@@ -39,6 +39,48 @@ TODO: If successful, save the token to localStorage and redirect them
         </div>
     </div>
 </template>
+
+<script setup>
+import { ref } from "vue";
+import { supabase } from "../lib/supabase";
+
+// define reactive variables
+const username = ref("");
+const password = ref("");
+const error = ref("");
+
+const handleLogin = async () => {
+    error.value = "";
+
+    try {
+        const { data, error: supabaseError } = await supabase.auth.signInWithPassword({
+            email: username.value,
+            password: password.value,
+        });
+
+        if (supabaseError) {
+            error.value = supabaseError.message;
+            return;
+        }
+
+        // Save session token (optional – Supabase already stores session automatically)
+        localStorage.setItem("supabase_token", data.session.access_token);
+
+        alert("Login successful!");
+
+        // Later you can redirect to another page, for example:
+        // router.push("/dashboard");
+
+    } catch (err) {
+        error.value = "Cannot connect to Supabase";
+        console.error(err);
+    }
+};
+</script>
+
+
+
+
 <style scoped>
 .login-container {
   display: flex;
