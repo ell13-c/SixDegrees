@@ -44,6 +44,7 @@ TODO: If successful, save the token to localStorage and redirect them
 import { ref } from "vue";
 import { supabase } from "../lib/supabase";
 
+
 // define reactive variables
 const username = ref("");
 const password = ref("");
@@ -73,6 +74,13 @@ const handleLogin = async () => {
         console.error(err);
     }
 };
+
+//test CORS
+fetch("http://localhost:8000/test-cors")
+  .then(res => res.json())
+  .then(data => console.log("CORS test:", data))
+  .catch(err => console.error("CORS error:", err));
+
 </script>
 
 
