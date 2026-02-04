@@ -21,3 +21,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.get("/test-cors")
+async def test_cors():
+    return {"msg": "CORS works!"}
