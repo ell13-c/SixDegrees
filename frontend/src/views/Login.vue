@@ -68,9 +68,6 @@ const handleLogin = async () => {
 
         alert("Login successful!");
 
-        // Later you can redirect to another page, for example:
-        // router.push("/dashboard");
-
     } catch (err) {
         error.value = "Cannot connect to Supabase";
         console.error(err);
