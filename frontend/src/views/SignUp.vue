@@ -9,6 +9,27 @@ import { supabase } from "../lib/supabase";
           <h2>Create a SixDegrees Account</h2>
             <form @submit.prevent="handleSignUp">
                 <div class="form-group">
+                    <label>Username</label>
+                    <input
+                        v-model="username"
+                        type="text"
+                        @focus="showValidation = true"
+                        @blur="showValidation = false"
+                        @input="checkUsername"
+                        placeholder="Create username"
+                        required
+                    />
+                  <div v-if="showValidation" class="pw-checklist" aria-live="polite">
+                    <ul>
+                      <li :class="{valid: uniqueUser, invalid: !uniqueUser}">
+                        <span class="dot">{{ uniqueUser ? '✓' : '✕' }}</span>
+                        Username is available
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+
+                <div class="form-group">
                     <label>Email</label>
                     <input
                         v-model="email"
@@ -73,10 +94,23 @@ import { useRouter } from 'vue-router'
 import { supabase } from "../lib/supabase";
 
 const router = useRouter()
+const username = ref('')
 const email = ref('')
 const password = ref('')
 const error = ref('')
+const showValidation = ref(false)
 const showChecklist = ref(false)
+
+let uniqueUser = false;
+async function checkUsername() {
+  if(username.value) {
+    const { count, error } = await supabase
+      .from('profiles')
+      .select('*', { count : 'exact', head: true })
+      .eq('lower',username.value)
+    uniqueUser = count < 1
+  }
+}
 
 const validations = computed(() => {
   const pw = password.value || ''
