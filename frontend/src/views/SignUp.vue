@@ -9,21 +9,21 @@ import { supabase } from "../lib/supabase";
           <h2>Create a SixDegrees Account</h2>
             <form @submit.prevent="handleSignUp">
                 <div class="form-group">
-                    <label>Username</label>
+                    <label>Nickname</label>
                     <input
-                        v-model="username"
+                        v-model="nickname"
                         type="text"
                         @focus="showValidation = true"
-                        @blur="showValidation = false"
-                        @input="checkUsername"
-                        placeholder="Create username"
+                        @blur="showValidation = ~uniqueUser"
+                        @input="checkNickname(nickname); emptyUser = nickname.trimEnd().length == 0;"
+                        placeholder="Create nickname"
                         required
                     />
                   <div v-if="showValidation" class="pw-checklist" aria-live="polite">
                     <ul>
-                      <li :class="{valid: uniqueUser, invalid: !uniqueUser}">
-                        <span class="dot">{{ uniqueUser ? '✓' : '✕' }}</span>
-                        Username is available
+                      <li :class="{valid: uniqueUser && !emptyUser, invalid: !uniqueUser}">
+                        <span class="dot">{{ emptyUser ? '✕' : (uniqueUser ? '✓' : '✕') }}</span>
+                        {{ emptyUser ? 'Enter a valid nickname' : (uniqueUser ? 'Nickname is available' : 'Nickname is not available') }}
                       </li>
                     </ul>
                   </div>
@@ -94,22 +94,24 @@ import { useRouter } from 'vue-router'
 import { supabase } from "../lib/supabase";
 
 const router = useRouter()
-const username = ref('')
+const nickname = ref('')
 const email = ref('')
 const password = ref('')
 const error = ref('')
+const uniqueUser = ref(false)
+const emptyUser = ref(true)
 const showValidation = ref(false)
 const showChecklist = ref(false)
 
-let uniqueUser = false;
-async function checkUsername() {
-  if(username.value) {
-    const { count, error } = await supabase
-      .from('profiles')
-      .select('*', { count : 'exact', head: true })
-      .eq('lower',username.value)
-    uniqueUser = count < 1
-  }
+async function checkNickname(nickname) {
+  const nick = nickname.toLowerCase();
+  const { count, error } = await supabase
+    .from('profiles')
+    .select('*', { count : 'exact', head: true })
+    .eq('lowercase',nick)
+  uniqueUser.value = count < 1
+  if (showValidation.value != uniqueUser.value)
+    showValidation.value = true;
 }
 
 const validations = computed(() => {
@@ -140,6 +142,10 @@ async function handleSignUp() {
     error.value = signUpError.message
     return
   }
+
+  const { error } = await supabase
+    .from('profiles')
+    .insert({nickname:nickname})
 
   alert("Signup successful! You can now log in.")
   router.push("/login")
