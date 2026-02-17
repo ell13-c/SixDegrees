@@ -8,3 +8,5 @@ python-dotenv==1.0.0
 
 supabase
 pydantic
+numpy>=1.26
+scikit-learn>=1.4
