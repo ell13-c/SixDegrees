@@ -1,7 +1,6 @@
 <!-- 
 SIGNUP PAGE - form users see when creating a new account 
 -->
-import { supabase } from "../lib/supabase";
 
 <template>
     <div class="signup-container">
@@ -136,16 +135,17 @@ async function handleSignUp() {
   const { data, error: signUpError } = await supabase.auth.signUp({
     email: email.value,
     password: password.value,
+    options : {
+      data :{
+        nickname: nickname.value,
+      },
+    },
   })
 
   if (signUpError) {
     error.value = signUpError.message
     return
   }
-
-  const { error } = await supabase
-    .from('profiles')
-    .insert({nickname:nickname})
 
   alert("Signup successful! You can now log in.")
   router.push("/login")
