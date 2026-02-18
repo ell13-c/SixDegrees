@@ -47,48 +47,53 @@ import { ref } from "vue";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "vue-router";
 
-// define reactive variables
 const router = useRouter();
 const email = ref("");
 const password = ref("");
 const error = ref("");
 
-// redirect to signup page
-const handleSignup = async () => {
-  router.push("/signup");
-};
-
 const handleLogin = async () => {
-    error.value = "";
+  error.value = "";
 
-    try {
-        const { data, error: supabaseError } = await supabase.auth.signInWithPassword({
-            email: email.value,
-            password: password.value,
-        });
+  try {
+    const { data, error: loginError } =
+      await supabase.auth.signInWithPassword({
+        email: email.value,
+        password: password.value,
+      });
 
-        if (supabaseError) {
-            error.value = supabaseError.message;
-            return;
-        }
-
-        // Save session token
-        localStorage.setItem("supabase_token", data.session.access_token);
-
-        router.push("/");
-
-    } catch (err) {
-        error.value = "Cannot connect to Supabase";
-        console.error(err);
+    if (loginError) {
+      error.value = loginError.message;
+      return;
     }
+
+    const user = data.user;
+
+    // check if profile exists
+    const { data: profile, error: profileError } =
+      await supabase
+        .from("profiles")
+        .select("is_onboarded")
+        .eq("id", user.id)
+        .maybeSingle();
+
+    if (profileError) {
+      console.error(profileError);
+      error.value = "Cannot load profile.";
+      return;
+    }
+
+    if (!profile || !profile.is_onboarded) {
+      router.push("/profile-setup");
+    } else {
+      router.push("/");
+    }
+
+  } catch (err) {
+    error.value = "Login failed.";
+    console.error(err);
+  }
 };
-
-//test CORS
-// fetch("http://localhost:8000/test-cors")
-//  .then(res => res.json())
-//  .then(data => console.log("CORS test:", data))
-//  .catch(err => console.error("CORS error:", err));
-
 </script>
 
 <style scoped>
