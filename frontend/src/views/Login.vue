@@ -52,6 +52,11 @@ const email = ref("");
 const password = ref("");
 const error = ref("");
 
+// redirect to signup page
+const handleSignup = async () => {
+  router.push("/signup");
+};
+
 const handleLogin = async () => {
   error.value = "";
 
@@ -67,6 +72,10 @@ const handleLogin = async () => {
       return;
     }
 
+    // Save session token
+    localStorage.setItem("supabase_token", data.session.access_token);
+
+    // Get user data
     const user = data.user;
 
     // check if profile exists
@@ -78,7 +87,7 @@ const handleLogin = async () => {
         .maybeSingle();
 
     if (profileError) {
-      console.error(profileError);
+      console.error(profileError.message);
       error.value = "Cannot load profile.";
       return;
     }
