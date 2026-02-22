@@ -29,7 +29,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   2. Querying `interactions` returns seeded like/comment/dm counts between user pairs in canonical order (user_id_a < user_id_b)
   3. Querying `map_coordinates` with any center_user_id and `is_current=true` works (table exists, index present, initially empty)
   4. Backend service role key can read all three tables without RLS errors
-**Plans**: TBD
+**Plans**: 2 plans
+
+Plans:
+- [ ] 01-01-PLAN.md — Write setup_tables.sql DDL + apply in Supabase dashboard (DB-01, DB-02, DB-03, DB-04)
+- [ ] 01-02-PLAN.md — Write and run seed_db.py with 20 diverse users and interaction pairs (DB-05)
 
 ### Phase 2: Core Algorithm
 **Goal**: The full computation pipeline — interaction scoring, combined distance matrix, t-SNE projection, and origin translation — runs correctly on in-memory test data and produces a verifiable 2D coordinate output
@@ -84,7 +88,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Database Foundation | 0/? | Not started | - |
+| 1. Database Foundation | 0/2 | Not started | - |
 | 2. Core Algorithm | 0/? | Not started | - |
 | 3. Pipeline Integration | 0/? | Not started | - |
 | 4. API and Scheduler | 0/? | Not started | - |
