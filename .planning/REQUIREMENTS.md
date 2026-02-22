@@ -141,7 +141,7 @@ Deferred to future milestone.
 | DB-02 | Phase 1 | Database Foundation | Complete |
 | DB-03 | Phase 1 | Database Foundation | Complete |
 | DB-04 | Phase 1 | Database Foundation | Complete |
-| DB-05 | Phase 1 | Database Foundation | Pending |
+| DB-05 | Phase 1 | Database Foundation | Complete |
 | INT-01 | Phase 2 | Core Algorithm | Pending |
 | INT-02 | Phase 2 | Core Algorithm | Pending |
 | INT-03 | Phase 2 | Core Algorithm | Pending |
