@@ -119,3 +119,17 @@ None - no external service configuration required.
 ---
 *Phase: 02-core-algorithm*
 *Completed: 2026-02-22*
+
+## Self-Check: PASSED
+
+All created files verified present. All commits verified in git log.
+
+- FOUND: backend/config/algorithm.py
+- FOUND: backend/services/map_pipeline/__init__.py
+- FOUND: backend/services/map_pipeline/tsne_projector.py
+- FOUND: backend/tests/map_pipeline/test_tsne_projector.py
+- FOUND: .planning/phases/02-core-algorithm/02-01-SUMMARY.md
+- FOUND commit 489b140: chore(02-01)
+- FOUND commit 8d798d0: test(02-01)
+- FOUND commit 1ac93e3: feat(02-01)
+- FOUND commit a58edcf: docs(02-01)
