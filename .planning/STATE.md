@@ -9,19 +9,19 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: 3 of 5 (Pipeline Integration) — IN PROGRESS
-Current Plan: 03-01 complete
-Next: Phase 3 Plan 02 — scheduler.py (APScheduler timezone-grouped CronTriggers)
-Status: Plan 03-01 complete — data_fetcher.py and coord_writer.py implemented and verified against live Supabase
-Last activity: 2026-02-23 — Plan 03-01 complete; DB read/write boundary modules for map pipeline
+Phase: 3 of 5 (Pipeline Integration) — COMPLETE
+Current Plan: 03-02 complete
+Next: Phase 4 Plan 01 — API routes (GET /map/{user_id}, POST /map/trigger/{user_id}, interaction endpoints)
+Status: Plan 03-02 complete — run_pipeline_for_user() orchestrator implemented and all 3 Phase 3 ROADMAP success criteria verified against live Supabase
+Last activity: 2026-02-23 — Plan 03-02 complete; full DB-connected pipeline end-to-end verified
 
-Progress: [█████████░] 55%
+Progress: [█████████░] 60%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 7
-- Average duration: ~9min (01-01: ~45min including checkpoint, 01-02: ~4min, 02-01: ~2min, 02-02: ~6min, 02-03: ~2min, 02-04: ~2min, 03-01: ~2min)
+- Total plans completed: 8
+- Average duration: ~8min (01-01: ~45min including checkpoint, 01-02: ~4min, 02-01: ~2min, 02-02: ~6min, 02-03: ~2min, 02-04: ~2min, 03-01: ~2min, 03-02: ~1min)
 - Total execution time: ~1.2 hours
 
 **By Phase:**
@@ -30,7 +30,7 @@ Progress: [█████████░] 55%
 |-------|-------|-------|----------|
 | 01-database-foundation | 2 complete / 2 total | ~49min | ~24min |
 | 02-core-algorithm | 4 complete / 4 total | ~12min | ~3min |
-| 03-pipeline-integration | 1 complete / 2 total | ~2min | ~2min |
+| 03-pipeline-integration | 2 complete / 2 total | ~3min | ~1.5min |
 
 **Recent Trend:**
 - Last 5 plans: 02-02 (~6min), 02-03 (~2min), 02-04 (~2min), 03-01 (~2min)
@@ -66,6 +66,8 @@ Recent decisions affecting current work:
 - raw_coords preserved in run_pipeline() output for future Procrustes alignment — not discarded after translation (plan 02-04)
 - Smoke test for coord_writer used nil-UUID not string "test-center-000" — map_coordinates.center_user_id is UUID type, string literals fail DB validation (plan 03-01)
 - occupation hardcoded to "" at DB boundary — user_profiles has no occupation column; UserProfile model requires it; boundary absorbs the mismatch (plan 03-01)
+- No try/except in run_pipeline_for_user(): ValueError propagates to Phase 4 scheduler for logging — error handling is the caller's responsibility, not the orchestrator's (plan 03-02)
+- services.map_pipeline is the single public API surface for Phase 4 — import run_pipeline_for_user, not sub-modules (plan 03-02)
 
 ### Pending Todos
 
@@ -81,4 +83,4 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Plan 03-01 complete. Next: Phase 3 Plan 02 — scheduler.py (APScheduler timezone-grouped CronTriggers at 19:00 per timezone).
+Stopped at: Plan 03-02 complete. Phase 3 fully done. Next: Phase 4 Plan 01 — API routes (GET /map/{user_id}, POST /map/trigger/{user_id}, interaction write endpoints).
