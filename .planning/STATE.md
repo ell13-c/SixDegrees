@@ -9,20 +9,20 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 
 ## Current Position
 
-Phase: 2 of 5 (Algorithm Pipeline) — COMPLETE
-Current Plan: 02-04 complete
-Next: Phase 3 Plan 01 — data_fetcher.py and coord_writer.py (DB wiring)
-Status: Phase 2 complete — all five ROADMAP Phase 2 success criteria verified (43 tests green); run_pipeline() orchestrator built and tested end-to-end
-Last activity: 2026-02-23 — Plan 02-04 complete; pipeline.py orchestrator + integration tests; Phase 2 complete
+Phase: 3 of 5 (Pipeline Integration) — IN PROGRESS
+Current Plan: 03-01 complete
+Next: Phase 3 Plan 02 — scheduler.py (APScheduler timezone-grouped CronTriggers)
+Status: Plan 03-01 complete — data_fetcher.py and coord_writer.py implemented and verified against live Supabase
+Last activity: 2026-02-23 — Plan 03-01 complete; DB read/write boundary modules for map pipeline
 
-Progress: [████████░░] 48%
+Progress: [█████████░] 55%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
-- Average duration: ~10min (01-01: ~45min including checkpoint, 01-02: ~4min, 02-01: ~2min, 02-02: ~6min, 02-03: ~2min, 02-04: ~2min)
-- Total execution time: ~1.1 hours
+- Total plans completed: 7
+- Average duration: ~9min (01-01: ~45min including checkpoint, 01-02: ~4min, 02-01: ~2min, 02-02: ~6min, 02-03: ~2min, 02-04: ~2min, 03-01: ~2min)
+- Total execution time: ~1.2 hours
 
 **By Phase:**
 
@@ -30,9 +30,10 @@ Progress: [████████░░] 48%
 |-------|-------|-------|----------|
 | 01-database-foundation | 2 complete / 2 total | ~49min | ~24min |
 | 02-core-algorithm | 4 complete / 4 total | ~12min | ~3min |
+| 03-pipeline-integration | 1 complete / 2 total | ~2min | ~2min |
 
 **Recent Trend:**
-- Last 5 plans: 02-01 (~2min), 02-02 (~6min), 02-03 (~2min), 02-04 (~2min)
+- Last 5 plans: 02-02 (~6min), 02-03 (~2min), 02-04 (~2min), 03-01 (~2min)
 - Trend: Fast execution for pure coding tasks
 
 *Updated after each plan completion*
@@ -63,6 +64,8 @@ Recent decisions affecting current work:
 - Tier assignment uses 2D Euclidean distance from translated coordinates, not get_ranked_matches() — avoids 0.75 cutoff that would drop outer users (plan 02-03)
 - pipeline.py is pure computation — no Supabase IO; Phase 3 wraps with data_fetcher/coord_writer (plan 02-04)
 - raw_coords preserved in run_pipeline() output for future Procrustes alignment — not discarded after translation (plan 02-04)
+- Smoke test for coord_writer used nil-UUID not string "test-center-000" — map_coordinates.center_user_id is UUID type, string literals fail DB validation (plan 03-01)
+- occupation hardcoded to "" at DB boundary — user_profiles has no occupation column; UserProfile model requires it; boundary absorbs the mismatch (plan 03-01)
 
 ### Pending Todos
 
@@ -78,4 +81,4 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Plan 02-04 complete. Phase 2 complete. Next: Phase 3 — Pipeline Integration (data_fetcher.py, coord_writer.py, scheduler.py).
+Stopped at: Plan 03-01 complete. Next: Phase 3 Plan 02 — scheduler.py (APScheduler timezone-grouped CronTriggers at 19:00 per timezone).

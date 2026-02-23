@@ -46,15 +46,15 @@ Requirements for this milestone. All are backend/algorithm — no frontend UI im
 
 ### Data Access Layer
 
-- [ ] **DATA-01**: `data_fetcher.py` reads all user profiles from `user_profiles` table via Supabase Python client
-- [ ] **DATA-02**: `data_fetcher.py` reads all interaction counts from `interactions` table for the set of user_ids being processed
-- [ ] **DATA-03**: Backend uses service role key (not anon key) to bypass Supabase RLS
+- [x] **DATA-01**: `data_fetcher.py` reads all user profiles from `user_profiles` table via Supabase Python client
+- [x] **DATA-02**: `data_fetcher.py` reads all interaction counts from `interactions` table for the set of user_ids being processed
+- [x] **DATA-03**: Backend uses service role key (not anon key) to bypass Supabase RLS
 
 ### Coordinate Storage
 
-- [ ] **STORE-01**: After computing new coordinates, the write step marks all existing `is_current=true` rows for that center_user_id as `is_current=false` before inserting new rows
-- [ ] **STORE-02**: Previous coordinate rows are retained (not deleted) to support future animation delta computation
-- [ ] **STORE-03**: Each write stores both the requesting user themselves at (0,0) and all other users in the coordinate set
+- [x] **STORE-01**: After computing new coordinates, the write step marks all existing `is_current=true` rows for that center_user_id as `is_current=false` before inserting new rows
+- [x] **STORE-02**: Previous coordinate rows are retained (not deleted) to support future animation delta computation
+- [x] **STORE-03**: Each write stores both the requesting user themselves at (0,0) and all other users in the coordinate set
 
 ### API Endpoint
 
