@@ -58,11 +58,11 @@ Requirements for this milestone. All are backend/algorithm — no frontend UI im
 
 ### API Endpoint
 
-- [ ] **API-01**: `GET /map/{user_id}` returns precomputed coordinates from `map_coordinates` table — no live computation at request time
-- [ ] **API-02**: Response format: `{ user_id, computed_at, coordinates: [{ user_id, x, y, tier, display_name }] }`
-- [ ] **API-03**: The requesting user always appears in the coordinates list at (0.0, 0.0)
-- [ ] **API-04**: If user_id has no precomputed map, returns 404 with message "Map not yet computed for this user"
-- [ ] **API-05**: `POST /map/trigger/{user_id}` manually triggers pipeline recomputation for a single user (for testing/demo)
+- [x] **API-01**: `GET /map/{user_id}` returns precomputed coordinates from `map_coordinates` table — no live computation at request time
+- [x] **API-02**: Response format: `{ user_id, computed_at, coordinates: [{ user_id, x, y, tier, display_name }] }`
+- [x] **API-03**: The requesting user always appears in the coordinates list at (0.0, 0.0)
+- [x] **API-04**: If user_id has no precomputed map, returns 404 with message "Map not yet computed for this user"
+- [x] **API-05**: `POST /map/trigger/{user_id}` manually triggers pipeline recomputation for a single user (for testing/demo)
 
 ### Batch Scheduler
 
@@ -83,10 +83,10 @@ Requirements for this milestone. All are backend/algorithm — no frontend UI im
 All frontend data writes go through the backend — no direct frontend → Supabase writes for application data. Frontend only calls Supabase directly for Auth.
 
 - [x] **AUTH-01**: Backend validates the Supabase JWT on all write endpoints using `supabase.auth.get_user(token)`; returns HTTP 401 for missing or invalid tokens
-- [ ] **WRITE-01**: `POST /interactions/like` — accepts `{ target_user_id }` in body; validates JWT to identify acting user; upserts `interactions` row (canonical pair order) incrementing `likes_count`
-- [ ] **WRITE-02**: `POST /interactions/comment` — accepts `{ target_user_id }` in body; validates JWT; upserts `interactions` row incrementing `comments_count`
-- [ ] **WRITE-03**: `POST /interactions/dm` — accepts `{ target_user_id }` in body; validates JWT; upserts `interactions` row incrementing `dm_count`
-- [ ] **WRITE-04**: `PUT /profile` — accepts profile fields in body; validates JWT; creates or updates the authenticated user's row in `user_profiles`; user can only update their own profile
+- [x] **WRITE-01**: `POST /interactions/like` — accepts `{ target_user_id }` in body; validates JWT to identify acting user; upserts `interactions` row (canonical pair order) incrementing `likes_count`
+- [x] **WRITE-02**: `POST /interactions/comment` — accepts `{ target_user_id }` in body; validates JWT; upserts `interactions` row incrementing `comments_count`
+- [x] **WRITE-03**: `POST /interactions/dm` — accepts `{ target_user_id }` in body; validates JWT; upserts `interactions` row incrementing `dm_count`
+- [x] **WRITE-04**: `PUT /profile` — accepts profile fields in body; validates JWT; creates or updates the authenticated user's row in `user_profiles`; user can only update their own profile
 
 ### Frontend API Contract Document
 
