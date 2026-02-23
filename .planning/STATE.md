@@ -5,34 +5,34 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** The People Map — every user is always at (0,0), all others positioned by profile similarity + interaction intensity, updated daily
-**Current focus:** Phase 2 — Algorithm Pipeline
+**Current focus:** Phase 3 — Pipeline Integration (DB wiring)
 
 ## Current Position
 
-Phase: 2 of 5 (Algorithm Pipeline) — IN PROGRESS
-Current Plan: 02-03 complete
-Next: Phase 2 Plan 04 — t-SNE Projector and Full Pipeline (02-04)
-Status: Plan 02-03 complete — combined distance matrix and origin translator built and tested (17 TDD tests green)
-Last activity: 2026-02-23 — Plan 02-03 complete; build_combined_distance_matrix() and translate_and_assign_tiers() implemented
+Phase: 2 of 5 (Algorithm Pipeline) — COMPLETE
+Current Plan: 02-04 complete
+Next: Phase 3 Plan 01 — data_fetcher.py and coord_writer.py (DB wiring)
+Status: Phase 2 complete — all five ROADMAP Phase 2 success criteria verified (43 tests green); run_pipeline() orchestrator built and tested end-to-end
+Last activity: 2026-02-23 — Plan 02-04 complete; pipeline.py orchestrator + integration tests; Phase 2 complete
 
-Progress: [██████░░░░] 38%
+Progress: [████████░░] 48%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 5
-- Average duration: ~12min (01-01: ~45min including checkpoint, 01-02: ~4min, 02-01: ~2min, 02-02: ~6min, 02-03: ~2min)
-- Total execution time: ~1.0 hours
+- Total plans completed: 6
+- Average duration: ~10min (01-01: ~45min including checkpoint, 01-02: ~4min, 02-01: ~2min, 02-02: ~6min, 02-03: ~2min, 02-04: ~2min)
+- Total execution time: ~1.1 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-database-foundation | 2 complete / 2 total | ~49min | ~24min |
-| 02-core-algorithm | 3 complete / 4 total | ~10min | ~3min |
+| 02-core-algorithm | 4 complete / 4 total | ~12min | ~3min |
 
 **Recent Trend:**
-- Last 5 plans: 01-02 (~4min), 02-01 (~2min), 02-02 (~6min), 02-03 (~2min)
+- Last 5 plans: 02-01 (~2min), 02-02 (~6min), 02-03 (~2min), 02-04 (~2min)
 - Trend: Fast execution for pure coding tasks
 
 *Updated after each plan completion*
@@ -61,6 +61,8 @@ Recent decisions affecting current work:
 - Normalize by clip_val not clipped.max(): anchors at 0 so missing pairs always score 0.0 without special-case code (plan 02-02)
 - Field name mapping (city/state vs location_city/location_state) deferred to Phase 3 data_fetcher.py — UserProfile unchanged to avoid breaking /match routes (plan 02-03)
 - Tier assignment uses 2D Euclidean distance from translated coordinates, not get_ranked_matches() — avoids 0.75 cutoff that would drop outer users (plan 02-03)
+- pipeline.py is pure computation — no Supabase IO; Phase 3 wraps with data_fetcher/coord_writer (plan 02-04)
+- raw_coords preserved in run_pipeline() output for future Procrustes alignment — not discarded after translation (plan 02-04)
 
 ### Pending Todos
 
@@ -76,4 +78,4 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Plan 02-03 complete. Next: Phase 2 Plan 04 — t-SNE Projector and Full Pipeline (02-04).
+Stopped at: Plan 02-04 complete. Phase 2 complete. Next: Phase 3 — Pipeline Integration (data_fetcher.py, coord_writer.py, scheduler.py).
