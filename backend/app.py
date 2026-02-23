@@ -1,18 +1,33 @@
 # MAIN APP FILE
-# TODO: Import auth router and include it so /auth/login and /auth/register work
-#TODO: Add CORS middleware so frontend (localhost:5173) can talk to us
+# SINGLE WORKER CONSTRAINT: Always run with `uvicorn app:app --reload`.
+# Multi-worker mode (--workers N) causes APScheduler to fire N times per trigger.
+# See backend/services/map_pipeline/scheduler.py for full documentation.
 
-
-
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes.match import router as match_router
+from routes.map import router as map_router
+from routes.interactions import router as interactions_router
+from routes.profile import router as profile_router
+from services.map_pipeline.scheduler import setup_scheduler
 
-app = FastAPI()
 
-# add cors middleware
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Start APScheduler on FastAPI startup
+    scheduler = setup_scheduler()
+    scheduler.start()
+    yield
+    # Shutdown APScheduler cleanly on FastAPI shutdown
+    scheduler.shutdown()
+
+
+app = FastAPI(lifespan=lifespan)
+
+# CORS: hardcoded to localhost:5173 for local development only
 origins = [
-    "http://localhost:5173"  
+    "http://localhost:5173"
 ]
 
 app.add_middleware(
@@ -24,6 +39,10 @@ app.add_middleware(
 )
 
 app.include_router(match_router)
+app.include_router(map_router)
+app.include_router(interactions_router)
+app.include_router(profile_router)
+
 
 @app.get("/test-cors")
 async def test_cors():
