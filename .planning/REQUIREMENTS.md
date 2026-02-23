@@ -66,10 +66,10 @@ Requirements for this milestone. All are backend/algorithm — no frontend UI im
 
 ### Batch Scheduler
 
-- [ ] **SCHED-01**: APScheduler (AsyncIOScheduler) starts with the FastAPI app via lifespan context manager
-- [ ] **SCHED-02**: Scheduler registers one CronTrigger per unique timezone in the `user_profiles` table, firing at 19:00 in that timezone
-- [ ] **SCHED-03**: On trigger, the scheduler groups all users with that timezone and runs the full pipeline for all of them
-- [ ] **SCHED-04**: Single-worker constraint is documented: multi-worker uvicorn causes double-firing (known limitation, not fixed this milestone)
+- [x] **SCHED-01**: APScheduler (AsyncIOScheduler) starts with the FastAPI app via lifespan context manager
+- [x] **SCHED-02**: Scheduler registers one CronTrigger per unique timezone in the `user_profiles` table, firing at 19:00 in that timezone
+- [x] **SCHED-03**: On trigger, the scheduler groups all users with that timezone and runs the full pipeline for all of them
+- [x] **SCHED-04**: Single-worker constraint is documented: multi-worker uvicorn causes double-firing (known limitation, not fixed this milestone)
 
 ### Demo Deliverables
 

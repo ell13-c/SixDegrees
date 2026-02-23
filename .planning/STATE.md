@@ -5,24 +5,24 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** The People Map — every user is always at (0,0), all others positioned by profile similarity + interaction intensity, updated daily
-**Current focus:** Phase 4 — API and Scheduler
+**Current focus:** Phase 4 complete — Phase 5 next (Demo and Docs)
 
 ## Current Position
 
-Phase: 4 of 5 (API and Scheduler) — IN PROGRESS
-Current Plan: 04-03 complete
-Next: Phase 4 Plan 04 — scheduler and app wiring
-Status: Plan 04-03 complete — POST /interactions/{like,comment,dm} and PUT /profile write endpoints live in backend/routes/interactions.py and backend/routes/profile.py
-Last activity: 2026-02-23 — Plan 04-03 complete; all interaction and profile write endpoints ready with JWT auth
+Phase: 4 of 5 (API and Scheduler) — COMPLETE
+Current Plan: 04-04 complete
+Next: Phase 5 — Demo and Docs
+Status: Plan 04-04 complete — APScheduler timezone-grouped CronTriggers wired into FastAPI lifespan; all Phase 4 routes registered; server starts cleanly
+Last activity: 2026-02-23 — Plan 04-04 complete; scheduler.py and app.py wiring finalized; Phase 4 all 4 plans complete
 
-Progress: [████████████░] 75%
+Progress: [█████████████░] 80%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 8
-- Average duration: ~8min (01-01: ~45min including checkpoint, 01-02: ~4min, 02-01: ~2min, 02-02: ~6min, 02-03: ~2min, 02-04: ~2min, 03-01: ~2min, 03-02: ~1min)
-- Total execution time: ~1.2 hours
+- Total plans completed: 9
+- Average duration: ~7min (01-01: ~45min including checkpoint, 01-02: ~4min, 02-01: ~2min, 02-02: ~6min, 02-03: ~2min, 02-04: ~2min, 03-01: ~2min, 03-02: ~1min, 04-01: ~13min, 04-02: ~2min, 04-03: ~2min, 04-04: ~3min)
+- Total execution time: ~1.3 hours
 
 **By Phase:**
 
@@ -31,10 +31,10 @@ Progress: [████████████░] 75%
 | 01-database-foundation | 2 complete / 2 total | ~49min | ~24min |
 | 02-core-algorithm | 4 complete / 4 total | ~12min | ~3min |
 | 03-pipeline-integration | 2 complete / 2 total | ~3min | ~1.5min |
-| 04-api-and-scheduler | 3 complete / 4 total | ~17min | ~5.7min |
+| 04-api-and-scheduler | 4 complete / 4 total | ~20min | ~5min |
 
 **Recent Trend:**
-- Last 5 plans: 03-02 (~1min), 04-01 (~13min), 04-02 (~2min), 04-03 (~2min)
+- Last 5 plans: 04-01 (~13min), 04-02 (~2min), 04-03 (~2min), 04-04 (~3min)
 - Trend: Fast execution for pure coding tasks
 
 *Updated after each plan completion*
@@ -78,6 +78,10 @@ Recent decisions affecting current work:
 - Canonical pair ordering enforced in Python (min/max) before RPC call — DB CHECK is second defense, Python gives cleaner 400 error (plan 04-03)
 - Only non-None fields in profile upsert payload — avoids overwriting existing data on partial updates (plan 04-03)
 - PUT /profile on_conflict='user_id' — single upsert handles both create and update cases (plan 04-03)
+- AsyncIOScheduler with CronTrigger per unique timezone — DB query at startup, re-query at fire time for current user list (plan 04-04)
+- replace_existing=True on add_job — safe for future app restarts without duplicate jobs (plan 04-04)
+- asynccontextmanager lifespan replaces deprecated @app.on_event — modern FastAPI pattern (plan 04-04)
+- apscheduler pinned to >=3.10,<4 in requirements.txt — prevents accidental 4.x upgrade (plan 04-04)
 
 ### Pending Todos
 
@@ -86,11 +90,11 @@ None.
 ### Blockers/Concerns
 
 - Known bug: `handleLogout()` in `Home.vue` scoped inside `loadPosts()` — crashes on logout. Out of scope this milestone but worth noting.
-- APScheduler single-worker constraint: multi-worker uvicorn causes double-firing. Must document clearly.
+- APScheduler single-worker constraint: documented in scheduler.py and app.py — must use `uvicorn app:app --reload` only.
 - Supabase RLS: verify service role key is used for all backend DB reads (not anon key). Verified for algorithm tables; existing match routes not yet validated.
 - `psycopg2-binary` fails to build on macOS arm64 + Python 3.14. Not blocking for seed script (supabase-py uses HTTP). May need resolution before SQLAlchemy usage in later phases.
 
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 04-api-and-scheduler/04-03-PLAN.md. Plan 04-03 complete. Next: Phase 4 Plan 04 — scheduler and app wiring.
+Stopped at: Completed 04-api-and-scheduler/04-04-PLAN.md. Phase 4 complete (4/4 plans). Next: Phase 5 — Demo and Docs.

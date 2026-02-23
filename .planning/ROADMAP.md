@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Database Foundation** - Create all Supabase tables and seed 15+ mock users with interaction data (completed 2026-02-22)
 - [x] **Phase 2: Core Algorithm** - Build interaction scoring, combined distance matrix, t-SNE projection, and origin translation as pure computation modules (completed 2026-02-23)
 - [x] **Phase 3: Pipeline Integration** - Wire algorithm to real DB data (fetcher reads user_profiles/interactions, writer stores map_coordinates) (completed 2026-02-23)
-- [ ] **Phase 4: API and Scheduler** - Expose map coordinates via GET; accept interaction events and profile writes via JWT-validated POST/PUT endpoints; schedule daily batch recomputation per timezone
+- [x] **Phase 4: API and Scheduler** - Expose map coordinates via GET; accept interaction events and profile writes via JWT-validated POST/PUT endpoints; schedule daily batch recomputation per timezone (completed 2026-02-23)
 - [ ] **Phase 5: Demo and Docs** - Validate algorithm with test_map.py + Jupyter notebook; publish API contract and DB schema docs
 
 ## Phase Details
@@ -107,5 +107,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Database Foundation | 2/2 | Complete    | 2026-02-22 |
 | 2. Core Algorithm | 4/4 | Complete   | 2026-02-23 |
 | 3. Pipeline Integration | 2/2 | Complete    | 2026-02-23 |
-| 4. API and Scheduler | 3/4 | In Progress|  |
+| 4. API and Scheduler | 4/4 | Complete   | 2026-02-23 |
 | 5. Demo and Docs | 0/? | Not started | - |
