@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-22)
 
 **Core value:** The People Map — every user is always at (0,0), all others positioned by profile similarity + interaction intensity, updated daily
-**Current focus:** Phase 5 — Demo and Docs (in progress, plans 05-01 and 05-03 complete)
+**Current focus:** Phase 5 — Demo and Docs — COMPLETE (all 3 plans done)
 
 ## Current Position
 
-Phase: 5 of 5 (Demo and Docs) — IN PROGRESS
-Current Plan: 05-03 complete
-Next: Plan 05-02 — Jupyter Notebook Demo (remaining plan)
-Status: Plan 05-03 complete — docs/API_CONTRACT.md and docs/DB_SCHEMA.md written; complete frontend contract covering 6 endpoints and 3 DB tables
-Last activity: 2026-02-23 — Plan 05-03 complete; both frontend contract docs created from verified route code
+Phase: 5 of 5 (Demo and Docs) — COMPLETE
+Current Plan: 05-02 complete (final plan)
+Next: All phases complete — milestone done
+Status: Plan 05-02 complete — scripts/people_map_demo.ipynb created with 14 cells covering all 5 pipeline stages, tier scatter plot, and Alex-Skyler sensitivity demo
+Last activity: 2026-02-23 — Plan 05-02 complete; all Phase 5 plans done; full milestone complete
 
-Progress: [██████████████░] 87%
+Progress: [███████████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
-- Average duration: ~7min (01-01: ~45min including checkpoint, 01-02: ~4min, 02-01: ~2min, 02-02: ~6min, 02-03: ~2min, 02-04: ~2min, 03-01: ~2min, 03-02: ~1min, 04-01: ~13min, 04-02: ~2min, 04-03: ~2min, 04-04: ~3min, 05-01: ~2min)
+- Total plans completed: 14
+- Average duration: ~7min (01-01: ~45min including checkpoint, 01-02: ~4min, 02-01: ~2min, 02-02: ~6min, 02-03: ~2min, 02-04: ~2min, 03-01: ~2min, 03-02: ~1min, 04-01: ~13min, 04-02: ~2min, 04-03: ~2min, 04-04: ~3min, 05-01: ~2min, 05-02: ~3min)
 - Total execution time: ~1.4 hours
 
 **By Phase:**
@@ -32,7 +32,7 @@ Progress: [██████████████░] 87%
 | 02-core-algorithm | 4 complete / 4 total | ~12min | ~3min |
 | 03-pipeline-integration | 2 complete / 2 total | ~3min | ~1.5min |
 | 04-api-and-scheduler | 4 complete / 4 total | ~20min | ~5min |
-| 05-demo-and-docs | 2 complete / 3 total | ~5min | ~2.5min |
+| 05-demo-and-docs | 3 complete / 3 total | ~8min | ~2.7min |
 
 **Recent Trend:**
 - Last 5 plans: 04-01 (~13min), 04-02 (~2min), 04-03 (~2min), 04-04 (~3min)
@@ -91,6 +91,10 @@ Recent decisions affecting current work:
 - [Phase 05-demo-and-docs]: Documented actual response shapes from code: interaction endpoints return {detail: '<type> recorded'} not {status: 'ok'} — code is authoritative over plan template
 - [Phase 05-demo-and-docs]: Documented exact 401 strings from deps.py: 'Authorization header missing' vs 'Invalid or expired token' — distinction helps frontend distinguish missing vs expired auth
 - [Phase 05-demo-and-docs]: DB_SCHEMA.md notes location_city/location_state column names explicitly (not city/state) — matches data_fetcher.py boundary
+- Fetch display_name from Supabase separately in notebook — UserProfile model omits display_name; added names_lookup dict (plan 05-02)
+- Use p.id (not p.user_id) in notebook — actual UserProfile field is 'id' not 'user_id' (plan 05-02)
+- Interaction dict keys in notebook use 'likes'/'comments'/'dms' (not 'likes_count') — data_fetcher.py maps DB column names to short keys (plan 05-02)
+- ipykernel pinned at 6.30.1 — ipykernel 7.x has kernel connect issue with Python 3.14 free-threaded build (plan 05-02)
 
 ### Pending Todos
 
@@ -106,4 +110,4 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 05-demo-and-docs/05-03-PLAN.md. Phase 5 plans 05-01 and 05-03 complete (2/3). Next: Plan 05-02 — Jupyter Notebook Demo.
+Stopped at: Completed 05-demo-and-docs/05-02-PLAN.md. All Phase 5 plans complete (3/3). Full milestone complete — all 5 phases done.
