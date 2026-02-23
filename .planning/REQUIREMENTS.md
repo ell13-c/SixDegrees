@@ -27,16 +27,16 @@ Requirements for this milestone. All are backend/algorithm — no frontend UI im
 ### Distance Matrix
 
 - [ ] **DIST-01**: Combined distance formula: `distance(i,j) = α × profile_distance(i,j) + β × (1 - interaction_score(i,j))`
-- [ ] **DIST-02**: α and β are stored in `backend/config/algorithm.py` with defaults α=0.6, β=0.4; no magic numbers in algorithm code
+- [x] **DIST-02**: α and β are stored in `backend/config/algorithm.py` with defaults α=0.6, β=0.4; no magic numbers in algorithm code
 - [ ] **DIST-03**: Profile distance computation preserves existing field weights (interests 35%, location 20%, languages 15%, field_of_study 10%, industry 10%, education 5%, age 5%)
 - [ ] **DIST-04**: Resulting NxN distance matrix has values in [0, 1], is symmetric, and has zeros on diagonal
 
 ### t-SNE Projection
 
-- [ ] **TSNE-01**: t-SNE replaces PCA for 2D coordinate projection; uses `sklearn.manifold.TSNE` with `metric='precomputed'`, `init='random'`, `random_state=42`
-- [ ] **TSNE-02**: Perplexity is computed dynamically: `perplexity = min(30, max(5, int(sqrt(N))))` where N is number of users
-- [ ] **TSNE-03**: Pipeline raises a clear error if N < 10 (t-SNE unstable below this threshold)
-- [ ] **TSNE-04**: Raw t-SNE coordinates (before origin translation) are preserved for potential future Procrustes alignment
+- [x] **TSNE-01**: t-SNE replaces PCA for 2D coordinate projection; uses `sklearn.manifold.TSNE` with `metric='precomputed'`, `init='random'`, `random_state=42`
+- [x] **TSNE-02**: Perplexity is computed dynamically: `perplexity = min(30, max(5, int(sqrt(N))))` where N is number of users
+- [x] **TSNE-03**: Pipeline raises a clear error if N < 10 (t-SNE unstable below this threshold)
+- [x] **TSNE-04**: Raw t-SNE coordinates (before origin translation) are preserved for potential future Procrustes alignment
 
 ### Origin Translation & Tier Assignment
 
