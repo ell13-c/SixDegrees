@@ -10,29 +10,29 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 2 of 5 (Algorithm Pipeline) — IN PROGRESS
-Current Plan: 02-01 complete
-Next: Phase 2 Plan 02 — Interaction Normalizer (02-02)
-Status: Plan 02-01 complete — algorithm config + t-SNE projector built and tested
-Last activity: 2026-02-22 — Plan 02-01 complete; 8 TDD tests green, scikit-learn 1.8.0 installed
+Current Plan: 02-02 complete
+Next: Phase 2 Plan 03 — Combined Distance Scoring (02-03)
+Status: Plan 02-02 complete — interaction scoring module built and tested (8 TDD tests green)
+Last activity: 2026-02-23 — Plan 02-02 complete; compute_interaction_scores() implemented with 95th-pct clip normalization
 
-Progress: [█████░░░░░] 24%
+Progress: [█████░░░░░] 28%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 3
-- Average duration: ~17min (01-01: ~45min including checkpoint, 01-02: ~4min, 02-01: ~2min)
-- Total execution time: ~0.85 hours
+- Total plans completed: 4
+- Average duration: ~14min (01-01: ~45min including checkpoint, 01-02: ~4min, 02-01: ~2min, 02-02: ~6min)
+- Total execution time: ~0.95 hours
 
 **By Phase:**
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
 | 01-database-foundation | 2 complete / 2 total | ~49min | ~24min |
-| 02-core-algorithm | 1 complete / 4 total | ~2min | ~2min |
+| 02-core-algorithm | 2 complete / 4 total | ~8min | ~4min |
 
 **Recent Trend:**
-- Last 5 plans: 01-01 (~45min, includes human checkpoint), 01-02 (~4min), 02-01 (~2min)
+- Last 5 plans: 01-01 (~45min, includes human checkpoint), 01-02 (~4min), 02-01 (~2min), 02-02 (~6min)
 - Trend: Fast execution for pure coding tasks
 
 *Updated after each plan completion*
@@ -57,6 +57,8 @@ Recent decisions affecting current work:
 - max_iter=1000 (not n_iter) — parameter renamed in sklearn 1.5; old name causes DeprecationWarning in 1.8.0 (plan 02-01)
 - perplexity = min(30, max(5, int(sqrt(N)))) — at N=10 gives perplexity=5, safely < N (plan 02-01)
 - scikit-learn 1.8.0, numpy 2.4.2 installed in backend venv (plan 02-01)
+- np.percentile(method='lower') for 95th-pct clip: picks actual observed data point as cap, avoids interpolated threshold near outlier (plan 02-02)
+- Normalize by clip_val not clipped.max(): anchors at 0 so missing pairs always score 0.0 without special-case code (plan 02-02)
 
 ### Pending Todos
 
@@ -71,5 +73,5 @@ None.
 
 ## Session Continuity
 
-Last session: 2026-02-22
-Stopped at: Plan 02-01 complete. Next: Phase 2 Plan 02 — Interaction Normalizer (02-02).
+Last session: 2026-02-23
+Stopped at: Plan 02-02 complete. Next: Phase 2 Plan 03 — Combined Distance Scoring (02-03).

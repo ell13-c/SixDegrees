@@ -33,7 +33,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 Plans:
 - [x] 01-01-PLAN.md — Write setup_tables.sql DDL + apply in Supabase dashboard (DB-01, DB-02, DB-03, DB-04)
-- [ ] 01-02-PLAN.md — Write and run seed_db.py with 20 diverse users and interaction pairs (DB-05)
+- [x] 01-02-PLAN.md — Write and run seed_db.py with 20 diverse users and interaction pairs (DB-05)
 
 ### Phase 2: Core Algorithm
 **Goal**: The full computation pipeline — interaction scoring, combined distance matrix, t-SNE projection, and origin translation — runs correctly on in-memory test data and produces a verifiable 2D coordinate output
@@ -48,8 +48,8 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — config/algorithm.py + t-SNE projector module (Wave 1 foundation)
-- [ ] 02-02-PLAN.md — interaction scoring module with 95th-pct normalization (Wave 2, parallel with 02-03)
+- [x] 02-01-PLAN.md — config/algorithm.py + t-SNE projector module (Wave 1 foundation)
+- [x] 02-02-PLAN.md — interaction scoring module with 95th-pct normalization (Wave 2, parallel with 02-03)
 - [ ] 02-03-PLAN.md — combined distance matrix + origin translator with tier assignment (Wave 2, parallel with 02-02)
 - [ ] 02-04-PLAN.md — pipeline orchestrator + end-to-end integration tests (Wave 3)
 
@@ -95,8 +95,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Database Foundation | 2/2 | Complete    | 2026-02-22 |
-| 2. Core Algorithm | 1/4 | In Progress|  |
-| 2. Core Algorithm | 0/? | Not started | - |
+| 2. Core Algorithm | 2/4 | In Progress|  |
 | 3. Pipeline Integration | 0/? | Not started | - |
 | 4. API and Scheduler | 0/? | Not started | - |
 | 5. Demo and Docs | 0/? | Not started | - |
