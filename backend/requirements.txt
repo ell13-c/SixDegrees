@@ -10,3 +10,4 @@ supabase
 pydantic
 numpy>=1.26
 scikit-learn>=1.4
+apscheduler>=3.10,<4
