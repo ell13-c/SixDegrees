@@ -78,7 +78,13 @@ Plans:
   4. `POST /interactions/like` with a valid JWT increments `likes_count` in `interactions`; same request without a JWT returns HTTP 401
   5. `PUT /profile` with a valid JWT creates or updates the user's row in `user_profiles`; attempting to update another user's profile returns HTTP 403
   6. FastAPI starts without errors and APScheduler registers CronTriggers matching unique timezones in `user_profiles`
-**Plans**: TBD
+**Plans**: 4 plans
+
+Plans:
+- [ ] 04-01-PLAN.md — increment_interaction Postgres RPC + get_current_user auth dependency (Wave 1)
+- [ ] 04-02-PLAN.md — GET /map/{user_id} and POST /map/trigger/{user_id} map routes (Wave 2)
+- [ ] 04-03-PLAN.md — POST /interactions/* and PUT /profile write endpoints (Wave 2)
+- [ ] 04-04-PLAN.md — APScheduler setup + app.py lifespan wiring + requirements.txt (Wave 3)
 
 ### Phase 5: Demo and Docs
 **Goal**: The algorithm's correctness is demonstrable through runnable scripts, and the frontend team has a complete written contract for what to read and write
