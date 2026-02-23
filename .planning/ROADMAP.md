@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Core Algorithm** - Build interaction scoring, combined distance matrix, t-SNE projection, and origin translation as pure computation modules (completed 2026-02-23)
 - [x] **Phase 3: Pipeline Integration** - Wire algorithm to real DB data (fetcher reads user_profiles/interactions, writer stores map_coordinates) (completed 2026-02-23)
 - [x] **Phase 4: API and Scheduler** - Expose map coordinates via GET; accept interaction events and profile writes via JWT-validated POST/PUT endpoints; schedule daily batch recomputation per timezone (completed 2026-02-23)
-- [ ] **Phase 5: Demo and Docs** - Validate algorithm with test_map.py + Jupyter notebook; publish API contract and DB schema docs
+- [x] **Phase 5: Demo and Docs** - Validate algorithm with test_map.py + Jupyter notebook; publish API contract and DB schema docs (completed 2026-02-23)
 
 ## Phase Details
 
@@ -113,4 +113,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Core Algorithm | 4/4 | Complete   | 2026-02-23 |
 | 3. Pipeline Integration | 2/2 | Complete    | 2026-02-23 |
 | 4. API and Scheduler | 4/4 | Complete   | 2026-02-23 |
-| 5. Demo and Docs | 2/3 | In Progress|  |
+| 5. Demo and Docs | 3/3 | Complete   | 2026-02-23 |
