@@ -19,10 +19,10 @@ Requirements for this milestone. All are backend/algorithm — no frontend UI im
 
 ### Interaction Scoring Module
 
-- [ ] **INT-01**: Interaction score computation reads weights from a dict config (`INTERACTION_WEIGHTS`) so adding a new interaction type requires only adding a column + a dict entry
-- [ ] **INT-02**: Each interaction type is normalized independently using min-max normalization with 95th-percentile clipping before normalization (prevents superuser collapse)
-- [ ] **INT-03**: Final interaction score per pair is a weighted sum of normalized individual type scores, producing a value in [0, 1]
-- [ ] **INT-04**: Missing pairs (no interactions between two users) produce interaction_score = 0.0 (no special case needed)
+- [x] **INT-01**: Interaction score computation reads weights from a dict config (`INTERACTION_WEIGHTS`) so adding a new interaction type requires only adding a column + a dict entry
+- [x] **INT-02**: Each interaction type is normalized independently using min-max normalization with 95th-percentile clipping before normalization (prevents superuser collapse)
+- [x] **INT-03**: Final interaction score per pair is a weighted sum of normalized individual type scores, producing a value in [0, 1]
+- [x] **INT-04**: Missing pairs (no interactions between two users) produce interaction_score = 0.0 (no special case needed)
 
 ### Distance Matrix
 
@@ -142,18 +142,18 @@ Deferred to future milestone.
 | DB-03 | Phase 1 | Database Foundation | Complete |
 | DB-04 | Phase 1 | Database Foundation | Complete |
 | DB-05 | Phase 1 | Database Foundation | Complete |
-| INT-01 | Phase 2 | Core Algorithm | Pending |
-| INT-02 | Phase 2 | Core Algorithm | Pending |
-| INT-03 | Phase 2 | Core Algorithm | Pending |
-| INT-04 | Phase 2 | Core Algorithm | Pending |
+| INT-01 | Phase 2 | Core Algorithm | Complete |
+| INT-02 | Phase 2 | Core Algorithm | Complete |
+| INT-03 | Phase 2 | Core Algorithm | Complete |
+| INT-04 | Phase 2 | Core Algorithm | Complete |
 | DIST-01 | Phase 2 | Core Algorithm | Pending |
-| DIST-02 | Phase 2 | Core Algorithm | Pending |
+| DIST-02 | Phase 2 | Core Algorithm | Complete |
 | DIST-03 | Phase 2 | Core Algorithm | Pending |
 | DIST-04 | Phase 2 | Core Algorithm | Pending |
-| TSNE-01 | Phase 2 | Core Algorithm | Pending |
-| TSNE-02 | Phase 2 | Core Algorithm | Pending |
-| TSNE-03 | Phase 2 | Core Algorithm | Pending |
-| TSNE-04 | Phase 2 | Core Algorithm | Pending |
+| TSNE-01 | Phase 2 | Core Algorithm | Complete |
+| TSNE-02 | Phase 2 | Core Algorithm | Complete |
+| TSNE-03 | Phase 2 | Core Algorithm | Complete |
+| TSNE-04 | Phase 2 | Core Algorithm | Complete |
 | ORIG-01 | Phase 2 | Core Algorithm | Pending |
 | ORIG-02 | Phase 2 | Core Algorithm | Pending |
 | ORIG-03 | Phase 2 | Core Algorithm | Pending |
@@ -191,4 +191,4 @@ Deferred to future milestone.
 
 ---
 *Requirements defined: 2026-02-22*
-*Last updated: 2026-02-22 — DB-01 through DB-04 marked Complete (plan 01-01 finished)*
+*Last updated: 2026-02-23 — INT-01 through INT-04 marked Complete (plan 02-02); TSNE-01 through TSNE-04, DIST-02 marked Complete (plan 02-01)*
