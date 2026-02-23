@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-02-22)
 ## Current Position
 
 Phase: 4 of 5 (API and Scheduler) — IN PROGRESS
-Current Plan: 04-01 complete
-Next: Phase 4 Plan 02 — interaction endpoints (POST /interactions/like, /comment, /dm)
-Status: Plan 04-01 complete — get_current_user JWT dependency and increment_interaction Postgres RPC both live
-Last activity: 2026-02-23 — Plan 04-01 complete; shared auth foundation ready for all write endpoints
+Current Plan: 04-03 complete
+Next: Phase 4 Plan 04 — scheduler and app wiring
+Status: Plan 04-03 complete — POST /interactions/{like,comment,dm} and PUT /profile write endpoints live in backend/routes/interactions.py and backend/routes/profile.py
+Last activity: 2026-02-23 — Plan 04-03 complete; all interaction and profile write endpoints ready with JWT auth
 
-Progress: [██████████░] 65%
+Progress: [████████████░] 75%
 
 ## Performance Metrics
 
@@ -31,10 +31,10 @@ Progress: [██████████░] 65%
 | 01-database-foundation | 2 complete / 2 total | ~49min | ~24min |
 | 02-core-algorithm | 4 complete / 4 total | ~12min | ~3min |
 | 03-pipeline-integration | 2 complete / 2 total | ~3min | ~1.5min |
-| 04-api-and-scheduler | 1 complete / 4 total | ~13min | ~13min |
+| 04-api-and-scheduler | 3 complete / 4 total | ~17min | ~5.7min |
 
 **Recent Trend:**
-- Last 5 plans: 02-04 (~2min), 03-01 (~2min), 03-02 (~1min), 04-01 (~13min)
+- Last 5 plans: 03-02 (~1min), 04-01 (~13min), 04-02 (~2min), 04-03 (~2min)
 - Trend: Fast execution for pure coding tasks
 
 *Updated after each plan completion*
@@ -72,6 +72,12 @@ Recent decisions affecting current work:
 - HTTPBearer(auto_error=False) + explicit None check — converts missing auth header to HTTP 401 (not FastAPI default 403) (plan 04-01)
 - increment_interaction RPC uses INSERT...ON CONFLICT DO NOTHING then UPDATE col+1 — standard upsert resets counts to 0 (plan 04-01)
 - Applied DDL via asyncpg direct connection (not MCP) — MCP requires personal access token; asyncpg with project password is equivalent (plan 04-01)
+- POST /map/trigger/{user_id} has no JWT — used for testing/demo only, per CONTEXT.md locked decision (plan 04-02)
+- ValueError from run_pipeline_for_user() mapped to HTTP 422 — conveys semantic failure (N < 10 or user not found) (plan 04-02)
+- _fetch_map_response() shared helper eliminates duplicated query logic between GET and POST trigger endpoints (plan 04-02)
+- Canonical pair ordering enforced in Python (min/max) before RPC call — DB CHECK is second defense, Python gives cleaner 400 error (plan 04-03)
+- Only non-None fields in profile upsert payload — avoids overwriting existing data on partial updates (plan 04-03)
+- PUT /profile on_conflict='user_id' — single upsert handles both create and update cases (plan 04-03)
 
 ### Pending Todos
 
@@ -87,4 +93,4 @@ None.
 ## Session Continuity
 
 Last session: 2026-02-23
-Stopped at: Completed 04-api-and-scheduler/04-01-PLAN.md. Plan 04-01 complete. Next: Phase 4 Plan 02 — interaction write endpoints (POST /interactions/like, /comment, /dm).
+Stopped at: Completed 04-api-and-scheduler/04-03-PLAN.md. Plan 04-03 complete. Next: Phase 4 Plan 04 — scheduler and app wiring.
