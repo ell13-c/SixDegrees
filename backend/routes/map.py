@@ -1,5 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
 from config.supabase import get_supabase_client
+from routes.deps import get_current_user
 from services.map_pipeline import run_pipeline_for_user
 
 router = APIRouter(prefix="/map", tags=["map"])
@@ -45,12 +46,20 @@ def _fetch_map_response(user_id: str) -> dict:
 
 
 @router.get("/{user_id}")
-async def get_map(user_id: str):
+async def get_map(
+    user_id: str,
+    acting_user_id: str = Depends(get_current_user),
+):
     return _fetch_map_response(user_id)
 
 
 @router.post("/trigger/{user_id}")
-async def trigger_map(user_id: str):
+async def trigger_map(
+    user_id: str,
+    acting_user_id: str = Depends(get_current_user),
+):
+    if acting_user_id != user_id:
+        raise HTTPException(status_code=403, detail="You may only trigger your own map")
     try:
         run_pipeline_for_user(user_id)
     except ValueError as exc:
