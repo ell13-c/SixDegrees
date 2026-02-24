@@ -36,3 +36,12 @@ Thumbs.db
 *.db
 *.sqlite
 *.sqlite3
+
+# Agentic workflow files
+.planning/
+.mcp.json
+CLAUDE.md
+.claude/
+
+# Python test cache
+.pytest_cache/

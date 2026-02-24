@@ -13,8 +13,3 @@ class UserProfile(BaseModel):
     industry: str              # e.g. "Technology", "Healthcare"
     age: int
 
-
-class MatchResult(BaseModel):
-    user: UserProfile
-    score: float               # similarity score in [0, 1], higher = more similar
-    tier: int                  # 1 = closest, 2 = second degree, 3 = third degree
