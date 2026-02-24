@@ -7,13 +7,7 @@
       </header>
 
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 =======
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
       <div style="border: 3px dashed #ff4444; padding: 20px; margin-bottom: 20px; background: #2a2a2a; border-radius: 8px;">
         <h3 style="color: white; margin-top: 0;"> Add Friend API Test</h3>
         <input 
@@ -60,12 +54,6 @@
     </div>
 
       
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
 >>>>>>> Stashed changes
       <CreatePost @post-created="loadPosts" />
 
@@ -103,108 +91,6 @@ const testAddFriend = async () => {
   if (!testNickname.value) {
     alert('Please enter a nickname')
     return
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-=======
->>>>>>> Stashed changes
-  }
-  
-  try {
-    const { data, error } = await supabase.rpc('request_friend', {
-      friend_nickname: testNickname.value
-    })
-    
-    if (error) throw error
-    
-    alert('Success! Response: ' + data)
-    testNickname.value = '' // Clear the input field
-    
-  } catch (err) {
-    console.error('Error adding friend:', err)
-    alert('Error: ' + err.message)
-  }
-}
-
-// Request List
-const incomingRequests = ref([]) // store like { id, nickname }
-
-const fetchIncomingRequests = async () => {
-  try {
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    // Get the array of UUIDs
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('pending_friend_requests')
-      .eq('id', user.id)
-      .single()
-
-    if (profileError) throw profileError
-    
-    const ids = profileData.pending_friend_requests || []
-
-    if (ids.length > 0) {
-      // Fetch the nicknames for all those IDs at once
-      const { data: nickData, error: nickError } = await supabase
-        .from('profiles')
-        .select('id, nickname')
-        .in('id', ids) // Filters profiles where ID is in our list
-
-      if (nickError) throw nickError
-      incomingRequests.value = nickData
-    } else {
-      incomingRequests.value = []
-    }
-  } catch (err) {
-    console.error('Error fetching nicknames:', err.message)
-  }
-}
-// Accept request
-const handleAccept = async (friendNickname) => {
-  try {
-    const { data, error } = await supabase.rpc('accept_friend', {
-      friend_nickname: friendNickname
-    })
-
-    if (error) throw error
-    
-    alert(`You are now friends with ${friendNickname}!`)
-    fetchIncomingRequests() // Refresh the list
-  } catch (err) {
-    alert('Error accepting friend: ' + err.message)
-  }
-}
-
-// Reject request
-const handleReject = async (friendNickname) => {
-  try {
-    const { data, error } = await supabase.rpc('reject_friend', {
-      friend_nickname: friendNickname
-    })
-
-    if (error) throw error
-    
-    alert(`You have rejected the friend request from ${friendNickname}.`)
-    fetchIncomingRequests() // Refresh the list to remove them
-  } catch (err) {
-    alert('Error rejecting friend: ' + err.message)
-  }
-}
-
-// arr to store all posts from the feed 
-// TODO: remove mock data once db is set up 
-const posts = ref([
-  {
-    id: 1,
-    user_id: '123',
-    content: 'This is a test post!',
-    tier: 'inner_circle',
-    created_at: new Date().toISOString(),
-    profiles: { username: 'TestUser' },
-    like_count: 5,
-    comment_count: 2
->>>>>>> Stashed changes
   }
   
   try {
@@ -304,12 +190,6 @@ onMounted(() => {
 onMounted(() => {
   fetchIncomingRequests()
 //   loadPosts()
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
 >>>>>>> Stashed changes
 })
 
@@ -341,16 +221,8 @@ async function loadPosts() {
     loading.value = false
   }
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 }
 
-=======
-} 
->>>>>>> Stashed changes
-=======
-} 
->>>>>>> Stashed changes
 =======
 } 
 >>>>>>> Stashed changes
@@ -363,14 +235,6 @@ async function loadPosts() {
     router.push('/login')
   }
 <<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
-=======
-
->>>>>>> Stashed changes
 =======
 
 >>>>>>> Stashed changes
