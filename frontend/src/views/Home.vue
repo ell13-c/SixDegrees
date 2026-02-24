@@ -8,7 +8,10 @@
 
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
       <div style="border: 3px dashed #ff4444; padding: 20px; margin-bottom: 20px; background: #2a2a2a; border-radius: 8px;">
@@ -58,6 +61,9 @@
 
       
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -98,7 +104,10 @@ const testAddFriend = async () => {
     alert('Please enter a nickname')
     return
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 =======
+=======
+>>>>>>> Stashed changes
   }
   
   try {
@@ -296,6 +305,9 @@ onMounted(() => {
   fetchIncomingRequests()
 //   loadPosts()
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
@@ -330,8 +342,12 @@ async function loadPosts() {
   }
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 }
 
+=======
+} 
+>>>>>>> Stashed changes
 =======
 } 
 >>>>>>> Stashed changes
@@ -348,6 +364,10 @@ async function loadPosts() {
   }
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 =======
 
 >>>>>>> Stashed changes
