@@ -4,7 +4,7 @@
       <div class="user-info">
         <div class="avatar">{{ userInitial }}</div>
         <div>
-          <div class="username">{{ post.profiles?.nickname || 'Unknown User' }}</div>
+          <div class="username">{{ post.user_profiles?.display_name || 'Unknown User' }}</div>
           <div class="post-meta">
             <span class="timestamp">{{ formatDate(post.created_at) }}</span>
             <span class="tier-badge" :class="`tier-${post.tier}`">
@@ -49,7 +49,7 @@
       </div>
       
       <div v-for="comment in comments" :key="comment.id" class="comment">
-        <strong>{{ comment.profiles?.nickname || 'Unknown' }}</strong>
+        <strong>{{ comment.user_profiles?.display_name || 'Unknown' }}</strong>
         <span>{{ comment.content }}</span>
       </div>
     </div>
@@ -80,8 +80,8 @@ const commentCount = ref(props.post.comment_count?.[0]?.count || 0)
  * Get first initial of username for avatar
  */
 const userInitial = computed(() => {
-  const username = props.post.profiles?.nickname || 'U'
-  return username.charAt(0).toUpperCase()
+  const name = props.post.user_profiles?.display_name || 'U'
+  return name.charAt(0).toUpperCase()
 })
 
 /**
@@ -171,7 +171,7 @@ async function toggleComments() {
     // Load comments
     const { data } = await supabase
       .from('comments')
-      .select('*, profiles(username)')
+      .select('*, user_profiles(display_name)')
       .eq('post_id', props.post.id)
       .order('created_at', { ascending: true })
     
@@ -197,7 +197,7 @@ async function handleComment() {
         user_id: user.id,
         content: newComment.value.trim()
       })
-      .select('*, profiles(nickname)')
+      .select('*, user_profiles(display_name)')
     
     if (error) throw error
     
