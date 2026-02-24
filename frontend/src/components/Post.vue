@@ -171,7 +171,7 @@ async function toggleComments() {
     // Load comments
     const { data } = await supabase
       .from('comments')
-      .select('*')
+      .select('*, user_profiles(display_name)')
       .eq('post_id', props.post.id)
       .order('created_at', { ascending: true })
     
@@ -197,7 +197,7 @@ async function handleComment() {
         user_id: user.id,
         content: newComment.value.trim()
       })
-      .select('*')
+      .select('*, user_profiles(display_name)')
 
     if (error) throw error
     
