@@ -49,7 +49,6 @@ def get_matches(
         raise HTTPException(status_code=404, detail="Your profile was not found. Call PUT /profile first.")
 
     from services.matching.scoring import build_similarity_matrix, apply_weights, similarity_to_distance
-    import numpy as np
 
     sim_matrix = build_similarity_matrix(users)
     weighted = apply_weights(sim_matrix)
