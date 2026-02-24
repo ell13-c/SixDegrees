@@ -33,10 +33,10 @@ from services.map_pipeline import run_pipeline_for_user
 from config.supabase import get_supabase_client
 
 # ── Constants ──────────────────────────────────────────────────────────────
-# Alex Rivera (Outdoors cluster) — center user for demo
+# Eleanor Colvin (Outdoors cluster) — center user for demo
 DEMO_CENTER_USER = "3561ceb0-d433-437d-8a4f-08da002dff50"
-# Skyler Thompson (Tech/Gaming cluster) — far from Alex in baseline
-BUMP_USER_A = "3561ceb0-d433-437d-8a4f-08da002dff50"   # Alex Rivera
+# Skyler Thompson (Tech/Gaming cluster) — far from Eleanor in baseline
+BUMP_USER_A = "3561ceb0-d433-437d-8a4f-08da002dff50"   # Eleanor Colvin
 BUMP_USER_B = "af17902c-723d-4a32-a5a1-93d9fb7777ee"   # Skyler Thompson
 BUMP_LIKES = 60   # Inflated interaction count for sensitivity demo
 
@@ -108,7 +108,7 @@ def euclidean(coords: list[dict], uid_a: str, uid_b: str) -> float | None:
     return math.sqrt((a["x"] - b["x"]) ** 2 + (a["y"] - b["y"]) ** 2)
 
 
-def plot_map(coords: list[dict], title: str, ax) -> None:
+def plot_map(coords: list[dict], title: str, ax, limit: float, highlight_uid: str | None = None) -> None:
     """Plot a coordinate set on the given matplotlib axes."""
     for tier in [1, 2, 3]:
         pts = [c for c in coords if c["tier"] == tier]
@@ -121,6 +121,7 @@ def plot_map(coords: list[dict], title: str, ax) -> None:
             label=TIER_NAMES[tier],
             s=80,
             alpha=0.8,
+            zorder=3,
         )
         for p in pts:
             ax.annotate(
@@ -130,10 +131,23 @@ def plot_map(coords: list[dict], title: str, ax) -> None:
                 xytext=(5, 5),
                 fontsize=7,
             )
-    # Mark center at origin
-    ax.scatter(0, 0, c="black", marker="*", s=200, label="Alex Rivera (you)", zorder=5)
+    # Eleanor Colvin always at origin
+    ax.scatter(0, 0, c="black", marker="*", s=200, zorder=5)
+    ax.scatter(0, 0, s=450, facecolors="none", edgecolors="black", linewidths=2.5, zorder=6)
+    ax.annotate("Eleanor Colvin", (0, 0), textcoords="offset points", xytext=(5, 5), fontsize=7)
+    # Optional highlight ring (e.g. Skyler Thompson)
+    if highlight_uid:
+        highlighted = next((c for c in coords if c["user_id"] == highlight_uid), None)
+        if highlighted:
+            ax.scatter(highlighted["x"], highlighted["y"], s=450, facecolors="none",
+                       edgecolors="orange", linewidths=2.5, zorder=6)
+    # Crosshairs at origin
     ax.axhline(0, color="gray", linewidth=0.5, linestyle="--", alpha=0.4)
     ax.axvline(0, color="gray", linewidth=0.5, linestyle="--", alpha=0.4)
+    # Symmetric limits — origin stays at center
+    ax.set_xlim(-limit, limit)
+    ax.set_ylim(-limit, limit)
+    ax.set_aspect("equal")
     ax.set_title(title, fontsize=11)
     ax.legend(fontsize=8)
     ax.set_xlabel("t-SNE dim 1")
@@ -152,11 +166,11 @@ if __name__ == "__main__":
     baseline_dist = euclidean(baseline_coords, BUMP_USER_A, BUMP_USER_B)
     print(f"      Coordinates computed: {len(baseline_coords)} users")
     if baseline_dist is not None:
-        print(f"      Distance(Alex, Skyler) = {baseline_dist:.4f}  [baseline]")
+        print(f"      Distance(Eleanor, Skyler) = {baseline_dist:.4f}  [baseline]")
 
     # Save original likes so we can restore
     original_likes = get_likes(BUMP_USER_A, BUMP_USER_B)
-    print(f"\n[2/3] Bumping Alex-Skyler likes_count: {original_likes} -> {BUMP_LIKES}")
+    print(f"\n[2/3] Bumping Eleanor-Skyler likes_count: {original_likes} -> {BUMP_LIKES}")
     set_likes(BUMP_USER_A, BUMP_USER_B, BUMP_LIKES)
 
     try:
@@ -165,7 +179,7 @@ if __name__ == "__main__":
         bumped_coords = fetch_coords(DEMO_CENTER_USER)
         bumped_dist = euclidean(bumped_coords, BUMP_USER_A, BUMP_USER_B)
         if bumped_dist is not None:
-            print(f"      Distance(Alex, Skyler) = {bumped_dist:.4f}  [after bump]")
+            print(f"      Distance(Eleanor, Skyler) = {bumped_dist:.4f}  [after bump]")
             if baseline_dist is not None:
                 delta = baseline_dist - bumped_dist
                 direction = "CLOSER" if delta > 0 else "farther"
@@ -175,14 +189,16 @@ if __name__ == "__main__":
 
         # ── Step 3: Plot side-by-side ──────────────────────────────────────
         print("\n[3/3] Rendering scatter plots ...")
-        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 8))
-        plot_map(baseline_coords, "Baseline: Alex's People Map", ax1)
-        plot_map(
-            bumped_coords,
-            f"After bumping Alex-Skyler likes to {BUMP_LIKES}",
-            ax2,
+        # Shared symmetric axis limits — keeps Eleanor (0,0) at the visual center of both plots
+        all_vals = (
+            [c["x"] for c in baseline_coords + bumped_coords] +
+            [c["y"] for c in baseline_coords + bumped_coords]
         )
-        plt.suptitle("People Map: Sensitivity Demonstration", fontsize=14, fontweight="bold")
+        limit = max(abs(v) for v in all_vals) * 1.15  # 15% padding around the furthest point
+        fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(18, 8))
+        plot_map(baseline_coords, f"Baseline (likes={original_likes})", ax1, limit, BUMP_USER_B)
+        plot_map(bumped_coords, f"After bump (likes={BUMP_LIKES})", ax2, limit, BUMP_USER_B)
+        plt.suptitle("Sensitivity: Eleanor\u2013Skyler interaction count bumped", fontsize=13, fontweight="bold")
         plt.tight_layout()
         plt.show()
 

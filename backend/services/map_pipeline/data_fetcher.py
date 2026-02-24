@@ -72,7 +72,7 @@ def fetch_all() -> Tuple[list[UserProfile], dict[tuple[str, str], dict[str, int]
         raw_interaction_counts[pair_key] = {
             "likes":    row["likes_count"],
             "comments": row["comments_count"],
-            "dms":      row["dm_count"],
+            "dms":      row.get("dm_count", 0),
         }
 
     return (users, raw_interaction_counts)
