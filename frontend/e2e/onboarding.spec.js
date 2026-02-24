@@ -47,7 +47,7 @@ test.describe('New user onboarding flow', () => {
     const password = process.env.TEST_PASSWORD;
 
     await page.goto('/signup');
-    await page.locator('input[type="email"]').first().fill(email);
+    await page.locator('input[type="text"]').first().fill(email);
     await page.locator('input[type="password"]').first().fill(password);
     await page.locator('button[type="submit"]').click();
 
