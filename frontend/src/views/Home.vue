@@ -6,8 +6,6 @@
         <button @click="handleLogout" class="logout-btn">Logout</button>
       </header>
 
-<<<<<<< Updated upstream
-=======
       <div style="border: 3px dashed #ff4444; padding: 20px; margin-bottom: 20px; background: #2a2a2a; border-radius: 8px;">
         <h3 style="color: white; margin-top: 0;"> Add Friend API Test</h3>
         <input 
@@ -54,7 +52,6 @@
     </div>
 
       
->>>>>>> Stashed changes
       <CreatePost @post-created="loadPosts" />
 
       <div v-if="loading" class="loading">Loading posts...</div>
@@ -181,16 +178,9 @@ const posts = ref([])
 // loading state while fetching posts
 const loading = ref(false)
 
-<<<<<<< Updated upstream
-
-onMounted(() => {
-  loadPosts()
-=======
-// TODO: Uncomment this once db tables (posts, profiles, likes, comments) are set up!
 onMounted(() => {
   fetchIncomingRequests()
-//   loadPosts()
->>>>>>> Stashed changes
+   loadPosts()
 })
 
 /** Function to fetch posts from the database w/ user info, like count, comment count
@@ -220,12 +210,8 @@ async function loadPosts() {
   } finally {
     loading.value = false
   }
-<<<<<<< Updated upstream
 }
 
-=======
-} 
->>>>>>> Stashed changes
   /**
    * Logs current user out and redirects to login page. 
    */
@@ -234,10 +220,6 @@ async function loadPosts() {
     localStorage.removeItem('supabase_token')
     router.push('/login')
   }
-<<<<<<< Updated upstream
-=======
-
->>>>>>> Stashed changes
 </script>
 
 <style scoped>
