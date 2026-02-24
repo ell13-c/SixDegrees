@@ -1,11 +1,60 @@
 <template>
-  <div class="home">
+<div class="home">
     <div class="container">
       <header class="page-header">
         <h1> Your Feed </h1>
         <button @click="handleLogout" class="logout-btn">Logout</button>
       </header>
 
+<<<<<<< Updated upstream
+=======
+      <div style="border: 3px dashed #ff4444; padding: 20px; margin-bottom: 20px; background: #2a2a2a; border-radius: 8px;">
+        <h3 style="color: white; margin-top: 0;"> Add Friend API Test</h3>
+        <input 
+          v-model="testNickname" 
+          placeholder="Enter an existing nickname" 
+          style="padding: 8px; margin-right: 10px; width: 200px;"
+        />
+        <button @click="testAddFriend" style="padding: 8px 16px; cursor: pointer; font-weight: bold; background: white; color: black; border: none; border-radius: 4px;">
+          Send Friend Request
+        </button>
+      </div>
+      
+    <div style="border: 3px dashed #44ff44; padding: 20px; margin-bottom: 20px; background: #2a2a2a; border-radius: 8px;">
+      <h3 style="color: white; margin-top: 0;">Pending Friend Requests</h3>
+      
+      <div v-if="incomingRequests.length === 0" style="color: #888;">
+        No pending requests.
+      </div>
+      
+      <ul v-else style="color: white; list-style: none; padding: 0;">
+        <li v-for="user in incomingRequests" :key="user.id" 
+          style="background: #333; padding: 10px; margin-bottom: 5px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+        
+        <span style="color: white;"><strong>{{ user.nickname }}</strong> wants to be friends!</span>
+        
+        <div style="display: flex; gap: 10px;">
+          <button @click="handleAccept(user.nickname)" 
+                  style="background: #44ff44; color: black; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+            Accept
+          </button>
+
+          <button @click="handleReject(user.nickname)" 
+                  style="background: #ff4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-weight: bold;">
+            Reject
+          </button>
+        </div>
+        </li>
+      </ul>
+      <button @click="fetchIncomingRequests" style="margin-top: 10px; padding: 5px; cursor: pointer;">
+        Refresh
+      </button>
+
+      
+    </div>
+
+      
+>>>>>>> Stashed changes
       <CreatePost @post-created="loadPosts" />
 
       <div v-if="loading" class="loading">Loading posts...</div>
@@ -26,6 +75,7 @@
 </template>
 
 <script setup>
+
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '../lib/supabase'
@@ -34,15 +84,113 @@ import Post from '../components/Post.vue'
 
 const router = useRouter()
 
+// ===== Add Friend Test Function =====
+const testNickname = ref('')
+
+const testAddFriend = async () => {
+  if (!testNickname.value) {
+    alert('Please enter a nickname')
+    return
+  }
+  
+  try {
+    const { data, error } = await supabase.rpc('request_friend', {
+      friend_nickname: testNickname.value
+    })
+    
+    if (error) throw error
+    
+    alert('Success! Response: ' + data)
+    testNickname.value = '' // Clear the input field
+    
+  } catch (err) {
+    console.error('Error adding friend:', err)
+    alert('Error: ' + err.message)
+  }
+}
+
+// Request List
+const incomingRequests = ref([]) // store like { id, nickname }
+
+const fetchIncomingRequests = async () => {
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    // Get the array of UUIDs
+    const { data: profileData, error: profileError } = await supabase
+      .from('profiles')
+      .select('pending_friend_requests')
+      .eq('id', user.id)
+      .single()
+
+    if (profileError) throw profileError
+    
+    const ids = profileData.pending_friend_requests || []
+
+    if (ids.length > 0) {
+      // Fetch the nicknames for all those IDs at once
+      const { data: nickData, error: nickError } = await supabase
+        .from('profiles')
+        .select('id, nickname')
+        .in('id', ids) // Filters profiles where ID is in our list
+
+      if (nickError) throw nickError
+      incomingRequests.value = nickData
+    } else {
+      incomingRequests.value = []
+    }
+  } catch (err) {
+    console.error('Error fetching nicknames:', err.message)
+  }
+}
+// Accept request
+const handleAccept = async (friendNickname) => {
+  try {
+    const { data, error } = await supabase.rpc('accept_friend', {
+      friend_nickname: friendNickname
+    })
+
+    if (error) throw error
+    
+    alert(`You are now friends with ${friendNickname}!`)
+    fetchIncomingRequests() // Refresh the list
+  } catch (err) {
+    alert('Error accepting friend: ' + err.message)
+  }
+}
+
+// Reject request
+const handleReject = async (friendNickname) => {
+  try {
+    const { data, error } = await supabase.rpc('reject_friend', {
+      friend_nickname: friendNickname
+    })
+
+    if (error) throw error
+    
+    alert(`You have rejected the friend request from ${friendNickname}.`)
+    fetchIncomingRequests() // Refresh the list to remove them
+  } catch (err) {
+    alert('Error rejecting friend: ' + err.message)
+  }
+}
+
 // arr to store all posts from the feed 
 const posts = ref([])
 
 // loading state while fetching posts
 const loading = ref(false)
 
+<<<<<<< Updated upstream
 
 onMounted(() => {
   loadPosts()
+=======
+// TODO: Uncomment this once db tables (posts, profiles, likes, comments) are set up!
+onMounted(() => {
+  fetchIncomingRequests()
+//   loadPosts()
+>>>>>>> Stashed changes
 })
 
 /** Function to fetch posts from the database w/ user info, like count, comment count
@@ -72,8 +220,12 @@ async function loadPosts() {
   } finally {
     loading.value = false
   }
+<<<<<<< Updated upstream
 }
 
+=======
+} 
+>>>>>>> Stashed changes
   /**
    * Logs current user out and redirects to login page. 
    */
@@ -82,6 +234,10 @@ async function loadPosts() {
     localStorage.removeItem('supabase_token')
     router.push('/login')
   }
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
 </script>
 
 <style scoped>
