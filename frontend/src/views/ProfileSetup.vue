@@ -89,8 +89,8 @@ const form = ref({
 
 const handleSubmit = async () => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("Not logged in");
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error("Not logged in");
 
     const interestsArray = interestsInput.value
       .split(",")
@@ -102,22 +102,27 @@ const handleSubmit = async () => {
       .map(s => s.trim())
       .filter(Boolean);
 
-    const { error: upsertError } = await supabase
-      .from("profiles")
-      .upsert({
-        id: user.id,
-        city: form.value.city,
-        state: form.value.state,
+    const res = await fetch("http://localhost:8000/profile", {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({
+        location_city: form.value.city,
+        location_state: form.value.state,
         age: parseInt(form.value.age),
-        education: form.value.education,
-        occupation: form.value.occupation,
+        field_of_study: form.value.education,
         industry: form.value.industry,
         interests: interestsArray,
-        languages: languagesArray,
-        is_onboarded: true
-      });
+        languages: languagesArray
+      })
+    });
 
-    if (upsertError) throw upsertError;
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.detail || `PUT /profile failed: ${res.status}`);
+    }
 
     router.push("/");
 
