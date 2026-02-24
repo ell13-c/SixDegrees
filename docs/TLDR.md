@@ -227,6 +227,8 @@ User opens the People Map
    ```
 4. The backend validates the token and refuses the request if it's missing or expired
 
+> ⚠️ **Known gap:** The existing `/match` routes do **not** have JWT validation yet. Do not expose these to real users until auth is added.
+
 ---
 
 ## 🚨 What Frontend Needs To Fix
@@ -329,8 +331,10 @@ curl http://localhost:8000/openapi.json
 ```
 
 **Environment files needed:**
-- `backend/.env` — needs `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` (service role, not anon)
+- `backend/.env` — needs `SUPABASE_URL` and `SUPABASE_KEY` (service role, not anon)
 - `frontend/.env` — needs `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (anon key is fine)
+
+> ⚠️ **Doc typo:** `docs/DB_SCHEMA.md` incorrectly lists the backend env var as `SUPABASE_SERVICE_ROLE_KEY` — the correct name is `SUPABASE_KEY`.
 
 ---
 
