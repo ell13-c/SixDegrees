@@ -34,38 +34,33 @@ import Post from '../components/Post.vue'
 
 const router = useRouter()
 
-// arr to store all posts from the feed 
 const posts = ref([])
-
-// loading state while fetching posts
 const loading = ref(false)
-
 
 onMounted(() => {
   loadPosts()
 })
 
-/** Function to fetch posts from the database w/ user info, like count, comment count
- * posts ordered by recency (newst first)
-*/
-
-
+/**
+ * Fetch posts from Supabase joined with user_profiles for display names,
+ * plus like_count and comment_count aggregates. Ordered newest first.
+ */
 async function loadPosts() {
   loading.value = true
-  
+
   try {
     const { data, error } = await supabase
       .from('posts')
       .select(`
         *,
-        profiles (nickname),
+        user_profiles(display_name),
         like_count:likes(count),
         comment_count:comments(count)
       `)
       .order('created_at', { ascending: false })
-    
+
     if (error) throw error
-    
+
     posts.value = data || []
   } catch (err) {
     console.error('Error loading posts:', err)
@@ -74,14 +69,14 @@ async function loadPosts() {
   }
 }
 
-  /**
-   * Logs current user out and redirects to login page. 
-   */
-  async function handleLogout() {
-    await supabase.auth.signOut()
-    localStorage.removeItem('supabase_token')
-    router.push('/login')
-  }
+/**
+ * Logs current user out and redirects to login page.
+ */
+async function handleLogout() {
+  await supabase.auth.signOut()
+  localStorage.removeItem('supabase_token')
+  router.push('/login')
+}
 </script>
 
 <style scoped>
