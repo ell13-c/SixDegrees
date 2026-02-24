@@ -27,6 +27,22 @@ class ProfileBody(BaseModel):
     timezone: Optional[str] = None
 
 
+@router.get("")
+def get_profile(
+    acting_user_id: str = Depends(get_current_user),
+):
+    result = (
+        get_supabase_client()
+        .table("user_profiles")
+        .select("*")
+        .eq("user_id", acting_user_id)
+        .execute()
+    )
+    if not result.data:
+        raise HTTPException(status_code=404, detail="Profile not found")
+    return result.data[0]
+
+
 @router.put("")
 def update_profile(
     body: ProfileBody,
