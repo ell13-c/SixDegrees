@@ -1,9 +1,3 @@
-<!-- 
-LOGIN PAGE - form users see when logging in 
-TODO: When they click submit, POST to http://localhost:8000/auth/login 
-TODO: If successful, save the token to localStorage and redirect them 
---> 
-
 <template>
     <div class="login-container">
         <div class="login-box">
