@@ -38,7 +38,7 @@ USER_DATA = [
     # ---- CLUSTER 1: Outdoors ----
     {
         "user_id": "3561ceb0-d433-437d-8a4f-08da002dff50",
-        "display_name": "Alex Rivera",
+        "display_name": "Eleanor Colvin",
         "interests": ["hiking", "photography", "rock climbing"],
         "location_city": "Denver",
         "location_state": "CO",
@@ -51,7 +51,7 @@ USER_DATA = [
     },
     {
         "user_id": "14b4d3d7-0b1d-4e88-b67c-aec53e4c50a5",
-        "display_name": "Sam Park",
+        "display_name": "HyangMok Baek",
         "interests": ["camping", "hiking", "photography"],
         "location_city": "Portland",
         "location_state": "OR",
@@ -64,7 +64,7 @@ USER_DATA = [
     },
     {
         "user_id": "920dda2e-b9c9-4df6-ae87-02db94d2c4a7",
-        "display_name": "Jordan Lee",
+        "display_name": "Amanda Hsu",
         "interests": ["rock climbing", "camping", "hiking"],
         "location_city": "Salt Lake City",
         "location_state": "UT",
@@ -77,7 +77,7 @@ USER_DATA = [
     },
     {
         "user_id": "c05707c3-592c-47c0-b9e4-acb4038940ff",
-        "display_name": "Morgan Chen",
+        "display_name": "Joshua Kunnappilly",
         "interests": ["photography", "camping", "travel"],
         "location_city": "Seattle",
         "location_state": "WA",
@@ -340,9 +340,9 @@ def build_interactions(user_ids_by_cluster: dict) -> list:
 
     # Outdoors cluster
     outdoors = user_ids_by_cluster["outdoors"]
-    add(outdoors[0], outdoors[1], 12, 7, 3)  # Alex <-> Sam
-    add(outdoors[0], outdoors[2], 9, 5, 1)  # Alex <-> Jordan
-    add(outdoors[0], outdoors[3], 8, 4, 2)  # Alex <-> Morgan
+    add(outdoors[0], outdoors[1], 12, 7, 3)  # Eleanor <-> HyangMok
+    add(outdoors[0], outdoors[2], 9, 5, 1)  # Eleanor <-> Amanda
+    add(outdoors[0], outdoors[3], 8, 4, 2)  # Eleanor <-> Joshua
     add(outdoors[1], outdoors[2], 11, 6, 2)  # Sam <-> Jordan
     add(outdoors[1], outdoors[3], 7, 3, 1)  # Sam <-> Morgan
     add(outdoors[2], outdoors[3], 10, 5, 1)  # Jordan <-> Morgan
