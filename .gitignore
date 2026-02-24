@@ -45,3 +45,7 @@ CLAUDE.md
 
 # Python test cache
 .pytest_cache/
+
+# Playwright
+test-results/
+playwright-report/
