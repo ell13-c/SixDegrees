@@ -17,6 +17,13 @@ class InteractionBody(BaseModel):
     target_user_id: str
 
 
+_RESPONSE_LABELS: dict[str, str] = {
+    "likes_count":    "likes",
+    "comments_count": "comments",
+    "dm_count":       "dms",
+}
+
+
 def _record_interaction(acting_user_id: str, target_user_id: str, column: str) -> dict:
     """Atomically upsert an interaction row and increment a count column via RPC.
 
@@ -35,7 +42,8 @@ def _record_interaction(acting_user_id: str, target_user_id: str, column: str) -
         {"p_user_id_a": uid_a, "p_user_id_b": uid_b, "p_column": column},
     ).execute()
 
-    return {"detail": f"{column.replace('_count', '')} recorded"}
+    label = _RESPONSE_LABELS.get(column, column.replace("_count", "s"))
+    return {"detail": f"{label} recorded"}
 
 
 @router.post("/like")
