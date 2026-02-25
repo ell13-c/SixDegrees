@@ -31,13 +31,7 @@ class ProfileBody(BaseModel):
 def get_profile(
     acting_user_id: str = Depends(get_current_user),
 ):
-    result = (
-        get_supabase_client()
-        .table("profiles")
-        .select("*")
-        .eq("id", acting_user_id)
-        .execute()
-    )
+    result = get_supabase_client().rpc("get_profile", {"p_id": acting_user_id}).execute()
     if not result.data:
         raise HTTPException(status_code=404, detail="Profile not found")
     return result.data[0]
@@ -56,8 +50,7 @@ def update_profile(
     })
     payload["is_onboarded"] = True
 
-    get_supabase_client().table("profiles").upsert(
-        payload, on_conflict="id"
-    ).execute()
+    p_data = {k: v for k, v in payload.items() if k != "id"}
+    get_supabase_client().rpc("upsert_profile", {"p_id": acting_user_id, "p_data": p_data}).execute()
 
     return {"detail": "Profile updated"}
