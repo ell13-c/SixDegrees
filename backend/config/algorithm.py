@@ -18,11 +18,10 @@ INTERACTION_WEIGHTS: dict[str, float] = {
 # Mirrors DEFAULT_WEIGHTS from services/matching/scoring.py.
 # Kept here so map_pipeline/ can import without depending on matching/ directly.
 PROFILE_WEIGHTS: dict[str, float] = {
-    "interests":       0.35,
-    "location":        0.20,
-    "languages":       0.15,
-    "field_of_study":  0.10,
-    "industry":        0.10,
-    "education_level": 0.05,
-    "age":             0.05,
+    "interests":  0.40,
+    "location":   0.20,
+    "languages":  0.15,
+    "education":  0.10,
+    "industry":   0.10,
+    "age":        0.05,
 }
