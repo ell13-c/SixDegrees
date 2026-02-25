@@ -12,9 +12,9 @@
         <div class="tier-selector">
           <label>Visible to:</label>
           <select v-model="selectedTier">
-            <option value="inner_circle">Inner Circle Only</option>
-            <option value="2nd_degree">Inner Circle + 2nd Degree</option>
-            <option value="3rd_degree">All Friends</option>
+            <option value=1>Inner Circle Only</option>
+            <option value=2>Inner Circle + 2nd Degree</option>
+            <option value=3>All Friends</option>
           </select>
         </div>
         
@@ -37,7 +37,7 @@ import { ref } from 'vue'
 import { supabase } from '../lib/supabase'
 
 const content = ref('')
-const selectedTier = ref('inner_circle')
+const selectedTier = ref(1)
 const posting = ref(false)
 const error = ref('')
 
@@ -57,21 +57,16 @@ async function handlePost() {
       return
     }
     
-    const { data, error: postError } = await supabase
-      .from('posts')
-      .insert({
-        user_id: user.id,
-        content: content.value.trim(),
-        tier: selectedTier.value,
-        created_at: new Date().toISOString()
-      })
-      .select()
+    const { data, error: postError } = await supabase.rpc('post', {
+      post_content: content.value.trim(),
+      post_tier: selectedTier.value
+    })
     
     if (postError) throw postError
     
     // Clear form
     content.value = ''
-    selectedTier.value = 'inner_circle'
+    selectedTier.value = 1
     
     // Emit event to parent to refresh feed
     emit('post-created', data[0])

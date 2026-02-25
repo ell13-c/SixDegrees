@@ -100,7 +100,10 @@ const testAddFriend = async () => {
     
     if (error) throw error
     
-    alert('Success! Response: ' + data)
+     if (data)
+      alert('Success! Your friend request has been sent!')
+    else
+      alert('Oops! Something went wrong! (Are you sure this person exists?)')
     testNickname.value = '' // Clear the input field
     
   } catch (err) {
@@ -114,31 +117,9 @@ const incomingRequests = ref([]) // store like { id, nickname }
 
 const fetchIncomingRequests = async () => {
   try {
-    const { data: { user } } = await supabase.auth.getUser()
-    
-    // Get the array of UUIDs
-    const { data: profileData, error: profileError } = await supabase
-      .from('profiles')
-      .select('pending_friend_requests')
-      .eq('id', user.id)
-      .single()
-
-    if (profileError) throw profileError
-    
-    const ids = profileData.pending_friend_requests || []
-
-    if (ids.length > 0) {
-      // Fetch the nicknames for all those IDs at once
-      const { data: nickData, error: nickError } = await supabase
-        .from('profiles')
-        .select('id, nickname')
-        .in('id', ids) // Filters profiles where ID is in our list
-
-      if (nickError) throw nickError
-      incomingRequests.value = nickData
-    } else {
-      incomingRequests.value = []
-    }
+    const { data : requestNicks, error: incomingRequestError } = await supabase.rpc('friend_requests')
+    if (incomingRequestError) throw incomingRequestError
+    incomingRequests.value = requestNicks
   } catch (err) {
     console.error('Error fetching nicknames:', err.message)
   }
@@ -195,15 +176,7 @@ async function loadPosts() {
   loading.value = true
   
   try {
-    const { data, error } = await supabase
-      .from('posts')
-      .select(`
-        *,
-        profiles (nickname),
-        like_count:likes(count),
-        comment_count:comments(count)
-      `)
-      .order('created_at', { ascending: false })
+    const { data, error } = await supabase.rpc('load_posts')
     
     if (error) throw error
     

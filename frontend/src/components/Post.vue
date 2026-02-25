@@ -4,7 +4,7 @@
       <div class="user-info">
         <div class="avatar">{{ userInitial }}</div>
         <div>
-          <div class="username">{{ post.profiles?.nickname || 'Unknown User' }}</div>
+          <div class="nickname">{{ post.nickname || 'Unknown User' }}</div>
           <div class="post-meta">
             <span class="timestamp">{{ formatDate(post.created_at) }}</span>
             <span class="tier-badge" :class="`tier-${post.tier}`">
@@ -49,7 +49,7 @@
       </div>
       
       <div v-for="comment in comments" :key="comment.id" class="comment">
-        <strong>{{ comment.profiles?.nickname || 'Unknown' }}</strong>
+        <strong>{{ comment.nickname || 'Unknown' }}</strong>
         <span>{{ comment.content }}</span>
       </div>
     </div>
@@ -73,15 +73,15 @@ const showComments = ref(false)
 const newComment = ref('')
 const comments = ref([])
 const isLiked = ref(false)
-const likeCount = ref(props.post.like_count?.[0]?.count || 0)
-const commentCount = ref(props.post.comment_count?.[0]?.count || 0)
+const likeCount = ref(props.post.like_count || 0)
+const commentCount = ref(props.post.comment_count || 0)
 
 /**
- * Get first initial of username for avatar
+ * Get first initial of nickname for avatar
  */
 const userInitial = computed(() => {
-  const username = props.post.profiles?.nickname || 'U'
-  return username.charAt(0).toUpperCase()
+  const nickname = props.post.nickname || 'U'
+  return nickname.charAt(0).toUpperCase()
 })
 
 /**
@@ -101,26 +101,26 @@ function formatDate(dateString) {
 
 /**
  * Returns label for a visibility tier
- * @param tier tier value from db (inner_circle, 2nd_degree, 3rd_degree)
+ * @param tier tier value from db (1, 2, 3)
  */
 function tierLabel(tier) {
   const labels = {
-    'inner_circle': 'Inner Circle',
-    '2nd_degree': '2nd Degree',
-    '3rd_degree': 'All Friends'
+    1: 'Inner Circle',
+    2: '2nd Degree',
+    3: 'All Friends'
   }
   return labels[tier] || tier
 }
 
 /**
  * returns icon component for a visibility tier
- * @param tier tier value from db (inner_circle, 2nd_degree, 3rd_degree)
+ * @param tier tier value from db (1, 2, 3)
  */
 function tierIcon(tier) {
   return {
-    'inner_circle': Lock,
-    '2nd_degree': Users,
-    '3rd_degree': Globe
+    1: Lock,
+    2: Users,
+    3: Globe
   }[tier] || Lock
 }
 
@@ -135,22 +135,17 @@ async function handleLike() {
   try {
     if (isLiked.value) {
       // Unlike
-      await supabase
-        .from('likes')
-        .delete()
-        .eq('post_id', props.post.id)
-        .eq('user_id', user.id)
+      await supabase.rpc('unlike_post', {
+        liked_post_id: props.post_id
+      })
       
       isLiked.value = false
       likeCount.value--
     } else {
       // Like
-      await supabase
-        .from('likes')
-        .insert({
-          post_id: props.post.id,
-          user_id: user.id
-        })
+      await supabase.rpc('like_post', {
+        liked_post_id: props.post.id
+      })
       
       isLiked.value = true
       likeCount.value++
@@ -162,15 +157,9 @@ async function handleLike() {
 
 // Check if current user has liked the post
 async function fetchUserLike() {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return
-
-  const { data, error } = await supabase
-    .from('likes')
-    .select('*')
-    .eq('post_id', props.post.id)
-    .eq('user_id', user.id)
-    .single()  // returns null if not found
+  const { data, error } = await supabase.rpc('is_user_liked', {
+    post_id: props.post.id
+  })
 
   if (!error && data) {
     isLiked.value = true
@@ -182,12 +171,11 @@ onMounted(async () => {
   await fetchUserLike()
 
   // refresh like count from DB
-  const { count, error } = await supabase
-    .from('likes')
-    .select('*', { count: 'exact', head: true })
-    .eq('post_id', props.post.id)
+  const { data , error } = await supabase.rpc('like_count', {
+    post_id: props.post.id
+  })
 
-  if (!error) likeCount.value = count
+  if (!error) likeCount.value = data
 })
 
 /**
@@ -199,11 +187,9 @@ async function toggleComments() {
   
   if (showComments.value && comments.value.length === 0) {
     // Load comments
-    const { data } = await supabase
-      .from('comments')
-      .select('*, profiles(nickname)')
-      .eq('post_id', props.post.id)
-      .order('created_at', { ascending: true })
+    const { data } = await supabase.rpc('load_comments', {
+      post_id: props.post.id
+    })
     
     if (data) comments.value = data
   }
@@ -220,14 +206,10 @@ async function handleComment() {
   if (!user) return
   
   try {
-    const { data, error } = await supabase
-      .from('comments')
-      .insert({
-        post_id: props.post.id,
-        user_id: user.id,
-        content: newComment.value.trim()
-      })
-      .select('*, profiles(nickname)')
+    const { data, error } = await supabase.rpc('comment', { 
+      post_id: props.post.id, 
+      comment_content: newComment.value.trim() 
+    })
     
     if (error) throw error
     
@@ -274,7 +256,7 @@ async function handleComment() {
   color: white;
 }
 
-.username {
+.nickname {
   font-weight: bold;
   color: white;
 }
@@ -293,17 +275,17 @@ async function handleComment() {
   font-size: 0.75rem;
 }
 
-.tier-inner_circle {
+.tier-1 {
   background: #1e3a5f;
   color: #6bb6ff;
 }
 
-.tier-2nd_degree {
+.tier-2 {
   background: #3a2f1e;
   color: #ffb66b;
 }
 
-.tier-3rd_degree {
+.tier-3 {
   background: #2f3a1e;
   color: #b6ff6b;
 }
