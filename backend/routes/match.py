@@ -19,7 +19,7 @@ def get_matches(
 ):
     """Return the top_n most similar users to the authenticated user."""
     sb = get_supabase_client()
-    rows = sb.table("profiles").select("*").execute().data
+    rows = sb.rpc("get_all_profiles", {}).execute().data
 
     if not rows:
         raise HTTPException(status_code=404, detail="No profiles found")
