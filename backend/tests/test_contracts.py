@@ -25,7 +25,7 @@ def test_get_map_response_shape(client):
         assert isinstance(data["coordinates"], list)
         if data["coordinates"]:
             coord = data["coordinates"][0]
-            assert all(k in coord for k in ("user_id", "x", "y", "tier", "display_name"))
+            assert all(k in coord for k in ("user_id", "x", "y", "tier", "nickname"))
 
 
 def test_get_map_returns_non_500(client):
@@ -117,13 +117,13 @@ def test_interactions_no_jwt_returns_401(client_no_auth):
 
 def test_put_profile_contract(client):
     """PUT /profile with valid JWT and body returns 200."""
-    response = client.put("/profile", json={"display_name": "Contract Test"})
+    response = client.put("/profile", json={"nickname": "Contract Test"})
     assert response.status_code == 200
 
 
 def test_put_profile_no_jwt_returns_401(client_no_auth):
     """PUT /profile without JWT returns 401."""
-    response = client_no_auth.put("/profile", json={"display_name": "Should Fail"})
+    response = client_no_auth.put("/profile", json={"nickname": "Should Fail"})
     assert response.status_code == 401
 
 
@@ -138,34 +138,32 @@ def test_get_match_happy_path(client, mock_sb):
     from unittest.mock import patch
 
     _OTHER_USER_ROW = {
-        "user_id": "other-user-uuid",
-        "display_name": "Other User",
+        "id": "other-user-uuid",
+        "nickname": "Other User",
         "is_onboarded": True,
         "interests": ["hiking"],
-        "location_city": "LA",
-        "location_state": "CA",
+        "city": "LA",
+        "state": "CA",
         "age": 30,
         "languages": ["English"],
-        "field_of_study": "Biology",
+        "education": "Biology",
         "industry": "Health",
-        "education_level": "masters",
-        "occupation": "",
         "timezone": "UTC",
+        "occupation": None,
     }
     _ACTING_USER_ROW = {
-        "user_id": "test-user-uuid",
-        "display_name": "Test User",
+        "id": "test-user-uuid",
+        "nickname": "Test User",
         "is_onboarded": True,
         "interests": ["coding"],
-        "location_city": "SF",
-        "location_state": "CA",
+        "city": "SF",
+        "state": "CA",
         "age": 25,
         "languages": ["English"],
-        "field_of_study": "CS",
+        "education": "CS",
         "industry": "Tech",
-        "education_level": "bachelors",
-        "occupation": "",
         "timezone": "UTC",
+        "occupation": None,
     }
     # Patch the select chain used by GET /match: .table().select("*").execute().data
     # This is the chain WITHOUT .eq() — different from the GET /profile chain.
@@ -180,6 +178,6 @@ def test_get_match_happy_path(client, mock_sb):
     assert len(data["matches"]) >= 1
     match_item = data["matches"][0]
     assert "user_id" in match_item
-    assert "display_name" in match_item
+    assert "nickname" in match_item
     assert "similarity_score" in match_item
     assert isinstance(match_item["similarity_score"], float)
