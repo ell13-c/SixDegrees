@@ -165,10 +165,9 @@ def test_get_match_happy_path(client, mock_sb):
         "timezone": "UTC",
         "occupation": None,
     }
-    # Patch the select chain used by GET /match: .table().select("*").execute().data
-    # This is the chain WITHOUT .eq() — different from the GET /profile chain.
-    select_chain = mock_sb.table.return_value.select.return_value
-    select_chain.execute.return_value.data = [_ACTING_USER_ROW, _OTHER_USER_ROW]
+    # Clear side_effect so return_value takes effect for all rpc() calls in this test.
+    mock_sb.rpc.side_effect = None
+    mock_sb.rpc.return_value.execute.return_value.data = [_ACTING_USER_ROW, _OTHER_USER_ROW]
 
     response = client.get("/match")
     assert response.status_code == 200

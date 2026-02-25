@@ -28,12 +28,12 @@ def test_put_profile_sets_is_onboarded(client, mock_sb):
     response = client.put("/profile", json={"nickname": "Test User"})
     assert response.status_code == 200
 
-    # Verify Supabase upsert was called with is_onboarded=True in the payload
-    upsert_call = mock_sb.table.return_value.upsert.call_args
-    assert upsert_call is not None, "Expected upsert() to be called but it was not"
-    upsert_payload = upsert_call[0][0]  # first positional argument to upsert()
-    assert upsert_payload.get("is_onboarded") is True, (
-        f"Expected is_onboarded=True in upsert payload, got: {upsert_payload}"
+    # Find the rpc("upsert_profile", ...) call and verify is_onboarded=True in p_data
+    rpc_calls = [c for c in mock_sb.rpc.call_args_list if c[0][0] == "upsert_profile"]
+    assert len(rpc_calls) == 1, f"Expected one rpc('upsert_profile') call, got: {mock_sb.rpc.call_args_list}"
+    p_data = rpc_calls[0][0][1]["p_data"]
+    assert p_data.get("is_onboarded") is True, (
+        f"Expected is_onboarded=True in upsert_profile p_data, got: {p_data}"
     )
 
 

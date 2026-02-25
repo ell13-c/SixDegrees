@@ -40,23 +40,36 @@ def _build_mock_supabase() -> MagicMock:
     """Build a MagicMock Supabase client with realistic chained return values."""
     mock_sb = MagicMock()
 
-    # GET /profile: sb.table("profiles").select("*").eq(uid).execute().data
-    select_chain = mock_sb.table.return_value.select.return_value
-    select_chain.eq.return_value.execute.return_value.data = [_MOCK_PROFILE_ROW]
+    # rpc() calls are routed by function name via side_effect so that:
+    # - get_map_coordinates / get_profile_nicknames return [] → map.py returns 404
+    #   (test_get_map_response_shape accepts 200 or 404; empty data → 404 is fine).
+    # - get_all_interactions returns [] (no interaction rows — avoids KeyError on
+    #   user_id_a/user_id_b when pipeline iterates interaction rows).
+    # - All other rpc() calls (get_profile, get_all_profiles, upsert_profile,
+    #   get_distinct_timezones, etc.) return execute().data = [_MOCK_PROFILE_ROW].
+    # Tests that need to override the return data should set mock_sb.rpc.side_effect = None
+    # and then assign mock_sb.rpc.return_value.execute.return_value.data directly.
+    _empty_result = MagicMock()
+    _empty_result.execute.return_value.data = []
 
-    # PUT /profile: sb.table("profiles").upsert(...).execute()
-    mock_sb.table.return_value.upsert.return_value.execute.return_value = MagicMock()
+    _default_result = MagicMock()
+    _default_result.execute.return_value.data = [_MOCK_PROFILE_ROW]
 
-    # scheduler setup_scheduler queries: sb.table("profiles").select("timezone").execute().data
-    # This is the same chain as above but returns empty list so no timezones are registered
-    # The chain is shared via table().select() so we need a general fallback.
-    # We override the select chain's execute to return empty data for the scheduler query.
-    # Since the mock uses MagicMock, any unspecified chain returns a MagicMock (truthy).
-    # We set data on the execute result explicitly above; the scheduler call (.select("timezone"))
-    # shares the same mock chain and will also return [_MOCK_PROFILE_ROW] — that is fine
-    # because setup_scheduler filters rows with row.get("timezone") which returns "UTC",
-    # and will try to register a CronTrigger for "UTC". The scheduler mock (patched separately)
-    # prevents actual APScheduler startup, so this is harmless.
+    # Store default result on return_value so tests can inspect call_args_list.
+    mock_sb.rpc.return_value = _default_result
+
+    _EMPTY_RESULT_RPCS = frozenset({
+        "get_map_coordinates",
+        "get_profile_nicknames",
+        "get_all_interactions",
+    })
+
+    def _rpc_side_effect(fn_name, *args, **kwargs):
+        if fn_name in _EMPTY_RESULT_RPCS:
+            return _empty_result
+        return _default_result
+
+    mock_sb.rpc.side_effect = _rpc_side_effect
 
     return mock_sb
 
