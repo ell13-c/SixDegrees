@@ -9,11 +9,14 @@ Requirements for milestone v2.0 Global Coordinate Map Engine.
 
 ### Data Contract + Migration
 
-- [ ] **DATA-01**: User map positions are stored as one global current row per user in `map_coordinates`.
-- [ ] **DATA-02**: User map write path preserves exactly one previous coordinate snapshot (`prev_x`, `prev_y`) per user for motion continuity.
-- [ ] **DATA-03**: User map reads/writes do not depend on legacy per-viewer map semantics.
-- [ ] **DATA-04**: User map data version is explicit (`version_date`, `computed_at`) and returned in API metadata.
-- [ ] **DATA-05**: User map persistence/update operations are executed through secured backend data-access interfaces consistent with existing runtime patterns.
+- [x] **DATA-01**: User map positions are stored as one global current row per user in `map_coordinates`.
+- [x] **DATA-02**: User map write path preserves exactly one previous coordinate snapshot (`prev_x`, `prev_y`) per user for motion continuity.
+- [x] **DATA-03**: User map reads/writes do not depend on legacy per-viewer map semantics.
+- [x] **DATA-04**: User map data version is explicit (`version_date`, `computed_at`) and returned in API metadata.
+- [x] **DATA-05**: User map persistence/update operations are executed through secured backend data-access interfaces consistent with existing runtime patterns.
+- [ ] **DATA-06**: User interactions foreign keys (`user_id_a`, `user_id_b`) reference `profiles(id)` only.
+- [ ] **DATA-07**: User interactions table contains only user IDs that exist in `profiles`.
+- [ ] **DATA-08**: User interactions baseline is rebuilt from `posts`/`likes`/`comments` activity for existing `profiles` users only.
 
 ### Algorithm Engine + Validation
 
@@ -37,6 +40,7 @@ Requirements for milestone v2.0 Global Coordinate Map Engine.
 - [ ] **OPS-02**: User 7pm local-time jobs perform delivery/cache warm only and never trigger global recompute.
 - [ ] **OPS-03**: User scheduler runtime prevents duplicate compute execution from multi-worker or restart conditions.
 - [ ] **OPS-04**: User cache warm path (if enabled) is version-aware and invalidates stale payloads safely.
+- [ ] **OPS-05**: User likes/comments triggers are validated end-to-end so interaction counters remain correct on insert/delete paths.
 
 ### Compatibility + Security
 
@@ -44,6 +48,7 @@ Requirements for milestone v2.0 Global Coordinate Map Engine.
 - [ ] **COMP-02**: User suggestion payload excludes sensitive profile fields beyond allowed API contract.
 - [ ] **COMP-03**: User milestone rollout preserves existing frontend behavior without frontend code changes.
 - [ ] **COMP-04**: User migration and rollout path includes safe fallback/rollback behavior if v2 validation fails.
+- [ ] **COMP-05**: User milestone completion requires zero runtime and zero DB dependency on `user_profiles`.
 
 ## Future Requirements
 
@@ -69,6 +74,7 @@ Explicitly excluded for v2.0.
 | Frontend code changes | Locked scope from milestone context |
 | `profiles` schema changes | Locked constraint to preserve frontend compatibility |
 | `pending_requests` table changes | Explicitly excluded by milestone constraints |
+| Migrating legacy `user_profiles` users into `profiles` | Explicit decision: only existing `profiles` users are in v2 runtime scope |
 | New follow-system product rollout | Not required for v2.0 map backend milestone |
 | Push notification delivery infrastructure | Deferred until backend map engine is stable |
 
@@ -78,35 +84,40 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | TBD | Pending |
-| DATA-02 | TBD | Pending |
-| DATA-03 | TBD | Pending |
-| DATA-04 | TBD | Pending |
-| DATA-05 | TBD | Pending |
-| ALGO-01 | TBD | Pending |
-| ALGO-02 | TBD | Pending |
-| ALGO-03 | TBD | Pending |
-| ALGO-04 | TBD | Pending |
-| ALGO-05 | TBD | Pending |
-| EGO-01 | TBD | Pending |
-| EGO-02 | TBD | Pending |
-| EGO-03 | TBD | Pending |
-| EGO-04 | TBD | Pending |
-| EGO-05 | TBD | Pending |
-| OPS-01 | TBD | Pending |
-| OPS-02 | TBD | Pending |
-| OPS-03 | TBD | Pending |
-| OPS-04 | TBD | Pending |
-| COMP-01 | TBD | Pending |
-| COMP-02 | TBD | Pending |
-| COMP-03 | TBD | Pending |
-| COMP-04 | TBD | Pending |
+| DATA-01 | Phase 20 | Complete |
+| DATA-02 | Phase 20 | Complete |
+| DATA-03 | Phase 20 | Complete |
+| DATA-04 | Phase 20 | Complete |
+| DATA-05 | Phase 20 | Complete |
+| DATA-06 | Phase 20 | Pending |
+| DATA-07 | Phase 20 | Pending |
+| DATA-08 | Phase 20 | Pending |
+| ALGO-01 | Phase 21 | Pending |
+| ALGO-02 | Phase 21 | Pending |
+| ALGO-03 | Phase 21 | Pending |
+| ALGO-04 | Phase 21 | Pending |
+| ALGO-05 | Phase 21 | Pending |
+| EGO-01 | Phase 22 | Pending |
+| EGO-02 | Phase 22 | Pending |
+| EGO-03 | Phase 22 | Pending |
+| EGO-04 | Phase 22 | Pending |
+| EGO-05 | Phase 22 | Pending |
+| OPS-01 | Phase 23 | Pending |
+| OPS-02 | Phase 23 | Pending |
+| OPS-03 | Phase 23 | Pending |
+| OPS-04 | Phase 23 | Pending |
+| OPS-05 | Phase 23 | Pending |
+| COMP-01 | Phase 22 | Pending |
+| COMP-02 | Phase 22 | Pending |
+| COMP-03 | Phase 22 | Pending |
+| COMP-04 | Phase 23 | Pending |
+| COMP-05 | Phase 23 | Pending |
 
 **Coverage:**
-- v2.0 requirements: 23 total
-- Mapped to phases: 0
-- Unmapped: 23 ⚠️
+- v2.0 requirements: 28 total
+- Mapped to phases: 28
+- Unmapped: 0 ✓
 
 ---
 *Requirements defined: 2026-02-26*
-*Last updated: 2026-02-26 after initial milestone v2.0 definition*
+*Last updated: 2026-02-26 after v2.0 legacy-detach and interactions integrity updates*
