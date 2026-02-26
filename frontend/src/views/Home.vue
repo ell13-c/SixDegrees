@@ -31,7 +31,7 @@
         </div>
         
         <ul v-else class="requests-list">
-          <li v-for="user in incomingRequests" :key="user.id" class="request-item">
+          <li v-for="user in incomingRequests" :key="user.id" class="request-item" @click="goToProfile(user.id)">
           
           <div class="request-user">
             <div class="avatar-small">{{ user.nickname.charAt(0).toUpperCase() }}</div>
@@ -39,11 +39,11 @@
           </div>
           
           <div class="request-buttons">
-            <button @click="handleAccept(user.nickname)" class="accept-btn">
+            <button @click.stop="handleAccept(user.nickname)" class="accept-btn">
               Accept
             </button>
 
-            <button @click="handleReject(user.nickname)" class="reject-btn">
+            <button @click.stop="handleReject(user.nickname)" class="reject-btn">
               Reject
             </button>
           </div>
@@ -185,6 +185,10 @@ async function loadPosts() {
   } finally {
     loading.value = false
   }
+}
+
+const goToProfile = (userId) => {
+  router.push(`/profile/${userId}`)
 }
 
   /**

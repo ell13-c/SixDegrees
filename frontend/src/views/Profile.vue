@@ -110,13 +110,15 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, onMounted, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { supabase } from '../lib/supabase'
 
 const router = useRouter()
+const route = useRoute()
 
 const profile = ref({})
+const currentUserID = ref(null)
 const isEditing = ref(false)
 const saving = ref(false)
 const error = ref('')
@@ -136,6 +138,11 @@ const editForm = ref({
 
 const interestsInput = ref('')
 const languagesInput = ref('')
+
+// check if user is viewinf their own profile or someone else's
+const isOwnProfile = computed(() => {
+  return !route.params.userId || route.params.userId === currentUserID.value
+})
 
 const userInitial = computed(() => {
   return profile.value.nickname?.charAt(0).toUpperCase() || 'U'
@@ -164,13 +171,21 @@ async function loadProfile() {
       return
     }
 
-    const { data, error: profileError } = await supabase.rpc('user_profile').single()
+    currentUserID.value = user.id
+
+    //if userid in route, load that profile, otherwise load current user's profile
+    const targetUserId = route.params.userId || user.id
+
+    const { data, error: profileError } = await supabase
+      .rpc('get_user_profile', { target_user_id: targetUserId })
+      .single()
     
     if (profileError) throw profileError
     
     profile.value = data || {}
   } catch (err) {
     console.error('Error loading profile:', err)
+    error.value = 'Failed to load profile'
   }
 }
 
