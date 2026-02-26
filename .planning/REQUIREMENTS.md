@@ -23,8 +23,8 @@ Requirements for milestone v2.0 Global Coordinate Map Engine.
 - [x] **ALGO-01**: User global position is computed from profile-vector manifold embedding that avoids full dense NxN distance materialization.
 - [x] **ALGO-02**: User global position is refined by sparse interaction graph forces using `interactions` counts and recency weighting.
 - [x] **ALGO-03**: User coordinate updates are bounded by movement-stability controls to prevent visual jitter.
-- [ ] **ALGO-04**: User coordinate publish is blocked when validation gates detect invalid input, unstable embedding, or persistence mismatch.
-- [ ] **ALGO-05**: User map compute run emits measurable quality/performance metrics and stores run-level diagnostics.
+- [x] **ALGO-04**: User coordinate publish is blocked when validation gates detect invalid input, unstable embedding, or persistence mismatch.
+- [x] **ALGO-05**: User map compute run emits measurable quality/performance metrics and stores run-level diagnostics.
 
 ### Ego API + Suggestions
 
@@ -95,8 +95,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | ALGO-01 | Phase 21 | Complete |
 | ALGO-02 | Phase 21 | Complete |
 | ALGO-03 | Phase 21 | Complete |
-| ALGO-04 | Phase 21 | Pending |
-| ALGO-05 | Phase 21 | Pending |
+| ALGO-04 | Phase 21 | Complete |
+| ALGO-05 | Phase 21 | Complete |
 | EGO-01 | Phase 22 | Pending |
 | EGO-02 | Phase 22 | Pending |
 | EGO-03 | Phase 22 | Pending |
