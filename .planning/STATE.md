@@ -3,12 +3,12 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: milestone
 status: in_progress
-last_updated: "2026-02-26T22:57:18.371Z"
+last_updated: "2026-02-26T23:01:15.309Z"
 progress:
   total_phases: 1
-  completed_phases: 0
+  completed_phases: 1
   total_plans: 3
-  completed_plans: 2
+  completed_plans: 3
 ---
 
 # Project State
@@ -24,15 +24,15 @@ See: `.planning/PROJECT.md` (updated 2026-02-26)
 
 Phase: 1 of 4 (Phase 20 - Global Coordinate Data Contract)
 Plan: 3 of 3 in current phase
-Status: In progress
-Last activity: 2026-02-26 - Completed 20-02 interactions rebuild and FK repoint execution.
+Status: Completed (Phase 20 complete)
+Last activity: 2026-02-26 - Completed 20-03 map API global-contract wiring and metadata contract tests.
 
-Progress: [███████░░░] 67%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 2
+- Total plans completed: 3
 - Average duration: 3 min
 - Total execution time: 0.1 hours
 
@@ -40,12 +40,13 @@ Progress: [███████░░░] 67%
 
 | Phase | Plans | Total | Avg/Plan |
 |-------|-------|-------|----------|
-| 20 | 2 | 6 min | 3 min |
+| 20 | 3 | 8 min | 3 min |
 
 **Recent Trend:**
-- Last 5 plans: 20-02 (2 min), 20-01 (4 min)
+- Last 5 plans: 20-03 (2 min), 20-02 (2 min), 20-01 (4 min)
 - Trend: Stable
 | Phase 20 P02 | 2 min | 2 tasks | 2 files |
+| Phase 20 P03 | 2 min | 2 tasks | 3 files |
 
 ## Accumulated Context
 
@@ -64,6 +65,8 @@ Recent decisions affecting current work:
 - [Phase 20]: Preserve one-step movement continuity in SQL by assigning prev_x/prev_y from current row on conflict updates.
 - [Phase 20]: Rebuild interactions via truncate and deterministic re-aggregation from profile-scoped activity before enforcing FK constraints.
 - [Phase 20]: Standardize interaction FK names to fk_interactions_user_a_profiles and fk_interactions_user_b_profiles after removing any user_profiles references.
+- [Phase 20]: Map route reads now use get_global_map_coordinates and return shared version metadata from global rows.
+- [Phase 20]: Map contract tests now require version_date/computed_at with deterministic RPC mocks to prevent false-green 404 behavior.
 
 ### Pending Todos
 
@@ -76,6 +79,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-26 17:57 EST
-Stopped at: Completed 20-02-PLAN.md
+Last session: 2026-02-26 18:00 EST
+Stopped at: Completed 20-03-PLAN.md
 Resume file: None
