@@ -136,7 +136,7 @@ async function handleLike() {
     if (isLiked.value) {
       // Unlike
       await supabase.rpc('unlike_post', {
-        liked_post_id: props.post_id
+        liked_post_id: props.post.id
       })
       
       isLiked.value = false
