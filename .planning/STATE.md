@@ -1,62 +1,78 @@
 ---
 gsd_state_version: 1.0
 milestone: v2.0
-milestone_name: Global Coordinate Map Engine
-status: defining_requirements
-last_updated: "2026-02-26T16:56:28-05:00"
+milestone_name: milestone
+status: in_progress
+last_updated: "2026-02-26T22:53:00.851Z"
 progress:
-  total_phases: 0
+  total_phases: 1
   completed_phases: 0
-  total_plans: 0
-  completed_plans: 0
+  total_plans: 3
+  completed_plans: 1
 ---
 
 # Project State
 
 ## Project Reference
 
-See: `.planning/PROJECT.md` (updated 2026-02-26 16:56:28 EST)
+See: `.planning/PROJECT.md` (updated 2026-02-26)
 
-**Core value:** A user opens the People Map and sees meaningful nearby people around themselves at (0,0), with stable daily-updated positions.
-**Current focus:** Milestone v2.0 - Global Coordinate Map Engine
+**Core value:** A user opens the People Map and immediately sees meaningful nearby people around themselves at (0,0), with stable, explainable positions that update daily.
+**Current focus:** Phase 20 - Global Coordinate Data Contract
 
 ## Current Position
 
-Phase: Not started (defining requirements)
-Plan: -
-Status: Defining requirements
-Last activity: 2026-02-26 16:56:28 EST - Milestone v2.0 started from `v2-NOTES.md`
+Phase: 1 of 4 (Phase 20 - Global Coordinate Data Contract)
+Plan: 2 of 3 in current phase
+Status: In progress
+Last activity: 2026-02-26 - Completed 20-01 global coordinate data contract execution.
+
+Progress: [███░░░░░░░] 33%
+
+## Performance Metrics
+
+**Velocity:**
+- Total plans completed: 1
+- Average duration: 4 min
+- Total execution time: 0.1 hours
+
+**By Phase:**
+
+| Phase | Plans | Total | Avg/Plan |
+|-------|-------|-------|----------|
+| 20 | 1 | 4 min | 4 min |
+
+**Recent Trend:**
+- Last 5 plans: 20-01 (4 min)
+- Trend: Stable
 
 ## Accumulated Context
 
-### Decisions carried from previous milestone
+### Decisions
 
-- Backend runtime already migrated to `profiles` model shape and RPC-driven access patterns.
-- Existing frontend behavior must remain compatible during backend evolution.
-- Scheduler lifecycle and single-worker operational constraints are already established.
-- Test harness and mock patterns in `backend/tests/` are stable and should be extended, not replaced.
+Decisions are logged in `.planning/PROJECT.md` Key Decisions table.
+Recent decisions affecting current work:
 
-### Historical references
-
-- Previous milestone snapshots: `.planning/archive/pre-v2-2026-02-25/`
-- Prior roadmap artifacts: `.planning/milestones/v1.0-phases/`, `.planning/milestones/v1.1-phases/`
-- V2 source context: `.planning/milestones/v2-NOTES.md`
+- [Phase 20-23]: v2.0 phases start at 20 and derive only from v2.0 requirements.
+- [Phase 22]: frontend behavior remains compatible with no frontend code changes.
+- [Phase 20/22]: `profiles` and `pending_requests` schema remain unchanged.
+- [Phase 20]: Do not migrate legacy `user_profiles` users into `profiles`; v2.0 runtime scope is existing `profiles` users only.
+- [Phase 20]: Rebuild `interactions` from `posts`/`likes`/`comments` for profiles users, then repoint FKs to `profiles(id)`.
+- [Phase 23]: Milestone cannot close until DB/runtime have zero `user_profiles` dependency and safe drop is complete.
+- [Phase 20]: Use upsert_global_map_coordinates JSONB RPC so backend publishes one batch timestamp/version across all users.
+- [Phase 20]: Preserve one-step movement continuity in SQL by assigning prev_x/prev_y from current row on conflict updates.
 
 ### Pending Todos
 
-- Define v2.0 scoped requirements with REQ-IDs
-- Produce v2.0 roadmap phases continuing from prior numbering
+None yet.
 
 ### Blockers/Concerns
 
-- None identified yet (to be captured during research and requirement scoping)
-
-### Branch
-
-Working branch: `baek`
+- Parameter tuning and stability thresholds for global embedding require benchmark-based calibration during phase planning.
+- Live DB currently has interactions FKs to `user_profiles`; Phase 20 must resolve FK repoint + integrity validation before any drop.
 
 ## Session Continuity
 
-Last session: 2026-02-26
-Stopped at: Milestone initialization complete; proceeding to research/requirements
-Resume file: `.planning/STATE.md`
+Last session: 2026-02-26 17:53 EST
+Stopped at: Completed 20-01-PLAN.md
+Resume file: None
