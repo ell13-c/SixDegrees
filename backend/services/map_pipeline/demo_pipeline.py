@@ -13,6 +13,8 @@ from services.map_pipeline.pipeline import run_pipeline
 def run_phase24_demo(
     output_dir: str = "demo/data",
     supabase=None,
+    amplification_likes: int = 1200,
+    amplification_comments: int = 800,
 ) -> dict:
     """Generate baseline + amplified artifacts for notebook use."""
     client = supabase
@@ -34,8 +36,19 @@ def run_phase24_demo(
     eleanor_friend_ids = sorted(str(value) for value in (eleanor_row or {}).get("friends") or [])
 
     baseline_counts = _interaction_rows_to_counts(interaction_rows)
-    amplified_rows = _amplify_pair(interaction_rows, ELEANOR_ID, WINSTON_ID)
+    amplified_rows = _amplify_pair(
+        interaction_rows,
+        ELEANOR_ID,
+        WINSTON_ID,
+        likes_delta=amplification_likes,
+        comments_delta=amplification_comments,
+    )
     amplified_counts = _interaction_rows_to_counts(amplified_rows)
+
+    ego_ids = {ELEANOR_ID, *eleanor_friend_ids}
+    local_users = [user for user in users if user.id in ego_ids]
+    local_baseline_counts = _filter_counts_for_users(baseline_counts, ego_ids)
+    local_amplified_counts = _filter_counts_for_users(amplified_counts, ego_ids)
 
     baseline_result = run_pipeline(
         users=users,
@@ -47,6 +60,16 @@ def run_phase24_demo(
         raw_interaction_counts=amplified_counts,
         requesting_user_id=ELEANOR_ID,
     )
+    local_baseline_result = run_pipeline(
+        users=local_users,
+        raw_interaction_counts=local_baseline_counts,
+        requesting_user_id=ELEANOR_ID,
+    )
+    local_amplified_result = run_pipeline(
+        users=local_users,
+        raw_interaction_counts=local_amplified_counts,
+        requesting_user_id=ELEANOR_ID,
+    )
 
     return {
         "metadata": {
@@ -56,9 +79,21 @@ def run_phase24_demo(
             "eleanor_id": ELEANOR_ID,
             "winston_id": WINSTON_ID,
             "eleanor_friend_ids": eleanor_friend_ids,
+            "amplification_likes": amplification_likes,
+            "amplification_comments": amplification_comments,
         },
         "baseline": _build_variant_payload(users, baseline_result, baseline_counts),
         "amplified": _build_variant_payload(users, amplified_result, amplified_counts),
+        "baseline_local": _build_variant_payload(
+            local_users,
+            local_baseline_result,
+            local_baseline_counts,
+        ),
+        "amplified_local": _build_variant_payload(
+            local_users,
+            local_amplified_result,
+            local_amplified_counts,
+        ),
         "comparison": _build_pair_comparison(baseline_counts, amplified_counts),
     }
 
@@ -110,7 +145,13 @@ def _interaction_rows_to_counts(rows: list[dict]) -> RawInteractionCounts:
     return counts
 
 
-def _amplify_pair(rows: list[dict], user_id_a: str, user_id_b: str) -> list[dict]:
+def _amplify_pair(
+    rows: list[dict],
+    user_id_a: str,
+    user_id_b: str,
+    likes_delta: int,
+    comments_delta: int,
+) -> list[dict]:
     target_pair = canonical_pair(user_id_a, user_id_b)
     amplified_rows = deepcopy(rows)
 
@@ -118,16 +159,16 @@ def _amplify_pair(rows: list[dict], user_id_a: str, user_id_b: str) -> list[dict
         pair = canonical_pair(str(row["user_id_a"]), str(row["user_id_b"]))
         if pair != target_pair:
             continue
-        row["likes_count"] = int(row.get("likes_count", 0)) + 120
-        row["comments_count"] = int(row.get("comments_count", 0)) + 80
+        row["likes_count"] = int(row.get("likes_count", 0)) + likes_delta
+        row["comments_count"] = int(row.get("comments_count", 0)) + comments_delta
         return amplified_rows
 
     amplified_rows.append(
         {
             "user_id_a": target_pair[0],
             "user_id_b": target_pair[1],
-            "likes_count": 120,
-            "comments_count": 80,
+            "likes_count": likes_delta,
+            "comments_count": comments_delta,
             "dm_count": 0,
         }
     )
@@ -180,10 +221,37 @@ def _build_variant_payload(
         for pair, counts in sorted(interaction_counts.items(), key=lambda item: item[0])
     ]
 
+    diagnostics = pipeline_result.get("diagnostics") or {}
+    refinement = diagnostics.get("refinement") or {}
+    interaction_edges = sorted(
+        [
+            {
+                "user_id_a": str(edge["user_id_a"]),
+                "user_id_b": str(edge["user_id_b"]),
+                "interaction_weight": float(edge.get("interaction_weight", 0.0)),
+                "recency_weight": float(edge.get("recency_weight", 0.0)),
+                "final_weight": float(edge.get("final_weight", 0.0)),
+                "weighted_interactions": float(edge.get("weighted_interactions", 0.0)),
+                "sensitivity_multiplier": float(edge.get("sensitivity_multiplier", 0.0)),
+                "effective_pull": float(refinement.get("step_size", 0.0))
+                * float(edge.get("final_weight", 0.0)),
+            }
+            for edge in diagnostics.get("interaction_edges") or []
+        ],
+        key=lambda row: (row["user_id_a"], row["user_id_b"]),
+    )
+
     return {
         "global_points": global_points,
         "translated_points": translated_points,
         "interactions": interactions,
+        "diagnostics": {
+            "refinement": {
+                "step_size": float(refinement.get("step_size", 0.0)),
+                "iterations": int(refinement.get("iterations", 0)),
+            },
+            "interaction_edges": interaction_edges,
+        },
     }
 
 
@@ -207,3 +275,14 @@ def _build_pair_comparison(
             "dms": int(amplified.get("dms", 0)),
         },
     }
+
+
+def _filter_counts_for_users(
+    counts: RawInteractionCounts,
+    allowed_user_ids: set[str],
+) -> RawInteractionCounts:
+    filtered: RawInteractionCounts = {}
+    for (user_id_a, user_id_b), value in counts.items():
+        if user_id_a in allowed_user_ids and user_id_b in allowed_user_ids:
+            filtered[(user_id_a, user_id_b)] = dict(value)
+    return filtered

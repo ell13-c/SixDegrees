@@ -35,15 +35,14 @@ def run_pipeline(
         SparseEmbeddingInput(users=users)
     )
 
-    refinement_result = refine_sparse_embedding(
-        RefinementInput(
-            user_ids=embedding_result.user_ids,
-            base_coordinates=embedding_result.coordinates,
-            profile_edges=embedding_result.profile_edges,
-            raw_interaction_counts=raw_interaction_counts,
-            interaction_sensitivity=interaction_sensitivity,
-        )
+    refinement_input = RefinementInput(
+        user_ids=embedding_result.user_ids,
+        base_coordinates=embedding_result.coordinates,
+        profile_edges=embedding_result.profile_edges,
+        raw_interaction_counts=raw_interaction_counts,
+        interaction_sensitivity=interaction_sensitivity,
     )
+    refinement_result = refine_sparse_embedding(refinement_input)
 
     stability_result = stabilize_coordinates(
         StabilityInput(
@@ -64,4 +63,28 @@ def run_pipeline(
         "raw_coords": stability_result.coordinates,
         "translated_results": translated_results,
         "user_ids": stability_result.user_ids,
+        "diagnostics": {
+            "refinement": {
+                "step_size": float(refinement_input.step_size),
+                "iterations": int(refinement_input.iterations),
+            },
+            "interaction_edges": _serialize_interaction_edges(
+                refinement_result.interaction_edges
+            ),
+        },
     }
+
+
+def _serialize_interaction_edges(edges: list) -> list[dict[str, float | str]]:
+    return [
+        {
+            "user_id_a": edge.user_id_a,
+            "user_id_b": edge.user_id_b,
+            "interaction_weight": float(edge.interaction_weight),
+            "recency_weight": float(edge.recency_weight),
+            "final_weight": float(edge.final_weight),
+            "weighted_interactions": float(edge.weighted_interactions),
+            "sensitivity_multiplier": float(edge.sensitivity_multiplier),
+        }
+        for edge in sorted(edges, key=lambda item: (item.user_id_a, item.user_id_b))
+    ]
