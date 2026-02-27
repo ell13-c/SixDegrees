@@ -50,20 +50,25 @@ def build_ego_map(
     normalized_coordinates = _normalize_coordinate_rows(coordinate_rows)
     normalized_profiles = _normalize_profile_rows(profile_rows)
 
+    if not normalized_coordinates:
+        raise ValueError("coordinate rows are required")
+
     coordinate_map = {row.user_id: row for row in normalized_coordinates}
     if requesting_user_id not in coordinate_map:
         raise ValueError("requesting user coordinate row is missing")
 
     profile_map = {row.id: row for row in normalized_profiles}
+    profile_friend_sets = {row.id: set(row.friends) for row in normalized_profiles}
     requester_profile = profile_map.get(requesting_user_id)
-    requester_friends = set(requester_profile.friends) if requester_profile else set()
+    requester_friends = profile_friend_sets.get(requesting_user_id, set())
 
     requester_coordinate = coordinate_map[requesting_user_id]
 
     mutual_ids: set[str] = set()
     for friend_id in requester_friends:
-        friend_profile = profile_map.get(friend_id)
-        if friend_profile is None or requesting_user_id not in set(friend_profile.friends):
+        if friend_id not in profile_map:
+            continue
+        if requesting_user_id not in profile_friend_sets.get(friend_id, set()):
             continue
         if friend_id in coordinate_map:
             mutual_ids.add(friend_id)
