@@ -117,3 +117,25 @@ def test_suggestions_are_deterministically_ordered():
 
     suggestion_ids = [node.user_id for node in nodes if node.is_suggestion]
     assert suggestion_ids == ["suggestion-b", "suggestion-a", "mutual-b"]
+
+
+def test_raises_when_requester_coordinate_missing():
+    with pytest.raises(ValueError, match="requesting user coordinate row is missing"):
+        build_ego_map("missing", _coordinate_rows(), _profile_rows())
+
+
+def test_handles_absent_friend_lists_and_empty_profile_rows():
+    coordinates = _coordinate_rows()
+    profile_dicts = [{"id": "requester", "nickname": "Requester", "friends": None}]
+
+    nodes = build_ego_map("requester", coordinates, profile_dicts, max_suggestions=1)
+
+    assert nodes[0].user_id == "requester"
+    assert nodes[0].is_suggestion is False
+    suggestion_nodes = [node for node in nodes if node.is_suggestion]
+    assert len(suggestion_nodes) == 1
+
+
+def test_raises_when_coordinate_rows_empty():
+    with pytest.raises(ValueError, match="coordinate rows are required"):
+        build_ego_map("requester", [], _profile_rows())
