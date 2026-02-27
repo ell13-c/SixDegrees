@@ -105,12 +105,44 @@ def test_interactions_like_contract(client):
     assert data.get("detail") == "likes recorded"
 
 
+def test_interactions_like_contract_calls_increment_rpc_with_canonical_pair(client, mock_sb):
+    """POST /interactions/like calls increment_interaction with canonical uid ordering."""
+    response = client.post("/interactions/like", json={"target_user_id": "aaa-user-uuid"})
+    assert response.status_code == 200
+
+    increment_calls = [
+        call
+        for call in mock_sb.rpc.call_args_list
+        if call.args and call.args[0] == "increment_interaction"
+    ]
+    assert increment_calls
+
+    payload = increment_calls[-1].args[1]
+    assert payload["p_user_id_a"] == "aaa-user-uuid"
+    assert payload["p_user_id_b"] == "test-user-uuid"
+    assert payload["p_column"] == "likes_count"
+
+
 def test_interactions_comment_contract(client):
     """POST /interactions/comment returns 200 with {detail: 'comments recorded'}."""
     response = client.post("/interactions/comment", json={"target_user_id": "other-user-uuid"})
     assert response.status_code == 200
     data = response.json()
     assert data.get("detail") == "comments recorded"
+
+
+def test_interactions_comment_contract_calls_increment_rpc(client, mock_sb):
+    """POST /interactions/comment increments the expected interactions column."""
+    response = client.post("/interactions/comment", json={"target_user_id": "other-user-uuid"})
+    assert response.status_code == 200
+
+    increment_calls = [
+        call
+        for call in mock_sb.rpc.call_args_list
+        if call.args and call.args[0] == "increment_interaction"
+    ]
+    assert increment_calls
+    assert increment_calls[-1].args[1]["p_column"] == "comments_count"
 
 
 def test_interactions_dm_returns_dms_recorded(client):
@@ -129,11 +161,18 @@ def test_interactions_dm_returns_dms_recorded(client):
     )
 
 
-def test_interactions_self_returns_400(client):
-    """POST /interactions/* with self as target returns 400."""
+def test_interactions_self_returns_400(client, mock_sb):
+    """POST /interactions/* with self as target returns 400 and skips RPC write."""
     # client fixture sets acting user to "test-user-uuid"
     response = client.post("/interactions/like", json={"target_user_id": "test-user-uuid"})
     assert response.status_code == 400
+
+    increment_calls = [
+        call
+        for call in mock_sb.rpc.call_args_list
+        if call.args and call.args[0] == "increment_interaction"
+    ]
+    assert not increment_calls
 
 
 def test_interactions_no_jwt_returns_401(client_no_auth):
