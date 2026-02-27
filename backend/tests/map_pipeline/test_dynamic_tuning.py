@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from models.user import UserProfile
 from scripts.run_phase24_demo_pipeline import _build_distance_curve_rows
@@ -193,7 +194,7 @@ def test_demo_distance_curve_rank_and_force_diagnostics_trend(tmp_path):
 
 def test_sensitivity_modes_monotonic_behavior(tmp_path):
     mode_rows: dict[InteractionSensitivityMode, list[dict]] = {}
-    for mode in ("natural", "strong-bounded", "uncapped"):
+    for mode in ("strong-bounded", "uncapped"):
         mode_rows[mode] = _build_distance_curve_rows(
             output_dir=str(tmp_path),
             use_fixture_data=True,
@@ -205,11 +206,19 @@ def test_sensitivity_modes_monotonic_behavior(tmp_path):
     for mode, rows in mode_rows.items():
         distances = [float(row["euclidean_distance"]) for row in rows]
         weights = [float(row["final_weight"]) for row in rows]
+        ranks = [int(row["nearest_neighbor_rank"]) for row in rows]
         assert all(curr <= prev + 1e-6 for prev, curr in zip(distances, distances[1:])), mode
         assert all(curr >= prev - 1e-9 for prev, curr in zip(weights, weights[1:])), mode
+        assert all(curr <= prev for prev, curr in zip(ranks, ranks[1:])), mode
         assert all(str(row["sensitivity_mode"]) == mode for row in rows)
 
-    natural_rows = mode_rows["natural"]
+    natural_rows = _build_distance_curve_rows(
+        output_dir=str(tmp_path),
+        use_fixture_data=True,
+        max_likes=1200,
+        max_comments=800,
+        interaction_sensitivity=InteractionSensitivity(mode="natural"),
+    )
     strong_rows = mode_rows["strong-bounded"]
     uncapped_rows = mode_rows["uncapped"]
 
@@ -224,3 +233,21 @@ def test_sensitivity_modes_monotonic_behavior(tmp_path):
     uncapped_weight = float(uncapped_rows[-1]["final_weight"])
     assert strong_weight >= natural_weight - 1e-9
     assert uncapped_weight >= strong_weight - 1e-9
+
+
+def test_natural_mode_regression_guard(tmp_path):
+    rows = _build_distance_curve_rows(
+        output_dir=str(tmp_path),
+        use_fixture_data=True,
+        max_likes=1200,
+        max_comments=800,
+        interaction_sensitivity=InteractionSensitivity(mode="natural"),
+    )
+
+    distances = [float(row["euclidean_distance"]) for row in rows]
+    ranks = [int(row["nearest_neighbor_rank"]) for row in rows]
+    weights = [float(row["final_weight"]) for row in rows]
+
+    assert distances == pytest.approx([0.057813272486118984] * len(rows), abs=1e-12)
+    assert ranks == [17] * len(rows)
+    assert weights == pytest.approx([0.92] * len(rows), abs=1e-12)
