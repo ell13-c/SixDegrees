@@ -2,7 +2,7 @@
   <div class="page-container">
     <header class="profile-header">
       <button @click="router.push('/')" class="back-btn">← Back to Feed</button>
-      <button v-if="!isEditing" @click="startEditing" class="edit-btn-header">Edit Profile</button>
+      <button v-if="!isEditing && isOwnProfile" @click="startEditing" class="edit-btn-header">Edit Profile</button>
     </header>
 
     <div id="main-profile-box">
@@ -181,6 +181,7 @@ async function loadProfile() {
       .single()
     
     if (profileError) throw profileError
+
     
     profile.value = data || {}
   } catch (err) {
