@@ -1,5 +1,8 @@
 <template>
   <div class="map-wrapper">
+    <header class="map-page-header">
+      <button @click="router.back()" class="back-btn">← Back</button>
+    </header>
     <div class="map-header">
       <h1 class="map-title">People Map</h1>
       <p class="map-subtitle">Your Social Map</p>
@@ -342,6 +345,32 @@ onBeforeUnmount(() => window.removeEventListener('resize', onResize))
 
 <style scoped>
 @import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@600;700&display=swap');
+
+.map-page-header {
+  width: 100%;
+  max-width: 900px;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+}
+
+.back-btn {
+  padding: 0.5rem 1rem;
+  background: #1e2540;
+  color: #8090b4;
+  border: 1px solid #252b50;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-family: 'DM Mono', monospace;
+  transition: all 0.2s;
+}
+
+.back-btn:hover {
+  border-color: #60d4f7;
+  color: #60d4f7;
+  background: rgba(96, 212, 247, 0.07);
+}
 
 .map-wrapper {
   min-height: 100vh;
