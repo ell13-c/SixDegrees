@@ -41,7 +41,7 @@ const routes = [
     //meta: { requiresAuth: true }
   },
   {
-    path: '/friends',
+    path: '/friends/:userId?',
     name: 'Friends',
     component: () => import('../views/Friends.vue'),
     meta: { requiresAuth: true }

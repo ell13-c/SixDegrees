@@ -10,8 +10,11 @@
         <div class="profile-pic-circle">
           {{ userInitial }}
         </div>
-        <button type="button" id="friends-btn" @click="router.push('/friends')">
+        <button v-if="isOwnProfile" type="button" id="friends-btn" @click="router.push('/friends')">
           Friends ({{ friendCount }})
+        </button>
+        <button v-else type="button" id="friends-btn" @click="router.push(`/friends/${profile.id}`)">
+          Friends
         </button>
       </div>
 

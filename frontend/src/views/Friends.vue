@@ -2,8 +2,8 @@
   <div class="friends-page">
     <div class="container">
       <header class="friends-header">
-        <button @click="router.push('/profile')" class="back-btn">← Back to Profile</button>
-        <h1>My Friends</h1>
+        <button @click="router.push(route.params.userId ? `/profile/${route.params.userId}` : '/profile')" class="back-btn">← Back to Profile</button>
+        <h1>{{ route.params.userId ? "Their Friends" : "My Friends" }}</h1>
         <span class="friend-count">{{ friends.length }}</span>
       </header>
 
@@ -28,7 +28,6 @@
             <h3>{{ friend.nickname }}</h3>
             <div class="friend-meta">
               <span class="friend-tier">Tier {{ friend.tier }}</span>
-              <span class="separator">·</span>
             </div>
           </div>
 
@@ -41,17 +40,21 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { supabase } from '../lib/supabase'
 
 const router = useRouter()
+const route = useRoute()
 const friends = ref([])
 const loading = ref(true)
 
 async function loadFriends() {
   loading.value = true
   try {
-    const { data, error } = await supabase.rpc('extended_friends', { max_tier: 3 })
+    const { data, error } = await supabase.rpc('extended_friends', 
+      { max_tier: 3,
+        target_user_id: route.params.userId || null
+      })
     if (error) throw error
     friends.value = (data || []).filter(f => f.tier === 1)
     console.log('Friend fields:', friends.value[0]) // add this
