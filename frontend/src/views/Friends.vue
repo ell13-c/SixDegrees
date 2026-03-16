@@ -2,7 +2,7 @@
   <div class="friends-page">
     <div class="container">
       <header class="friends-header">
-        <button @click="router.push(route.params.userId ? `/profile/${route.params.userId}` : '/profile')" class="back-btn">← Back to Profile</button>
+        <button @click="router.back()" class="back-btn">← Back</button>
         <h1>{{ route.params.userId ? "Their Friends" : "My Friends" }}</h1>
         <span class="friend-count">{{ friends.length }}</span>
       </header>

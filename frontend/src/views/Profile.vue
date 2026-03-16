@@ -1,7 +1,7 @@
 <template>
   <div class="page-container">
     <header class="profile-header">
-      <button @click="router.push('/')" class="back-btn">← Back to Feed</button>
+      <button @click="router.back()" class="back-btn">← Back</button>
       <button v-if="!isEditing && isOwnProfile" @click="startEditing" class="edit-btn-header">Edit Profile</button>
     </header>
 
