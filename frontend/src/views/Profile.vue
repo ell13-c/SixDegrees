@@ -16,6 +16,17 @@
         <button v-else type="button" id="friends-btn" @click="router.push(`/friends/${profile.id}`)">
           Friends
         </button>
+
+        <div v-if="!isOwnProfile" class="friendship-status">
+          <div v-if="isFriend" class="friend-badge">✓ Friends</div>
+          <template v-else>
+            <button v-if="!isOwnProfile && !requestSent" type="button"
+            class="add-friend-btn" @click="sendFriendRequest" :disabled="requesting">
+            {{ requesting ? 'Sending...' : '+ Add Friend' }}
+            </button>
+            <div v-else class="friend-requested">✓ Request Sent</div>
+          </template>
+        </div>
       </div>
 
       <div class="bio-container">
@@ -125,6 +136,8 @@ const currentUserID = ref(null)
 const isEditing = ref(false)
 const saving = ref(false)
 const error = ref('')
+const isFriend = ref(false)
+const hasPendingRequest = ref(false)
 
 const editForm = ref({
   nickname: '',
@@ -184,9 +197,15 @@ async function loadProfile() {
       .single()
     
     if (profileError) throw profileError
-
-    
     profile.value = data || {}
+
+    if(targetUserId != user.id){
+      const { data: friends } = await supabase.rpc('extended_friends', { max_tier: 1 })
+      isFriend.value = (friends || []).some(f => f.id === targetUserId)
+
+      const { data: pending } = await supabase.rpc('has_pending_request', { target_user_id: targetUserId })
+      requestSent.value = pending
+    }
   } catch (err) {
     console.error('Error loading profile:', err)
     error.value = 'Failed to load profile'
@@ -259,6 +278,26 @@ async function saveProfile() {
     saving.value = false
   }
 }
+
+  // direct friend requesting from profile
+  const requestSent = ref(false)
+  const requesting = ref(false)
+
+  async function sendFriendRequest() {
+    requesting.value = true
+    try {
+      const { data, error } = await supabase.rpc('request_friend', {
+        friend_nickname: profile.value.nickname
+      })
+      if (error) throw error
+      if (data) requestSent.value = true
+      else alert('Could not send request — you may already be friends or have a pending request.')
+    } catch (err) {
+      console.error('Error sending friend request:', err)
+    } finally {
+      requesting.value = false
+    }
+  }
 
 onMounted(() => {
   loadProfile()
@@ -522,5 +561,53 @@ li {
   background: #3d1f1f;
   border-radius: 6px;
   border: 1px solid #ff6b6b;
+}
+
+.friendship-status {
+  width: 100%;
+}
+
+.add-friend-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: transparent;
+  color: #088F8F;
+  border: 1px solid #088F8F;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+}
+
+.add-friend-btn:hover:not(:disabled) {
+  background: #088F8F;
+  color: white;
+}
+
+.add-friend-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.friend-requested {
+  width: 100%;
+  padding: 0.75rem;
+  background: #1a3a2a;
+  color: #4caf7d;
+  border: 1px solid #4caf7d44;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
+.friend-badge {
+  width: 100%;
+  padding: 0.75rem;
+  background: #088F8F22;
+  color: #088F8F;
+  border: 1px solid #088F8F44;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  text-align: center;
 }
 </style>
