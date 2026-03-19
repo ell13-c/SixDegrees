@@ -37,7 +37,7 @@ def run_pipeline_for_user(requesting_user_id: str) -> None:
         None. Side effect: map_coordinates table updated for requesting_user_id.
 
     Raises:
-        ValueError: If N < 10 (propagated from tsne_projector — too few users).
+        ValueError: If N < 10 (too few users for embedding).
         ValueError: If requesting_user_id is not in the profiles table.
     """
     run_id = str(uuid4())

@@ -14,6 +14,7 @@ from services.map_pipeline.contracts import (
     SparseEmbeddingInput,
     SparseEmbeddingResult,
 )
+from services.matching.similarity import _stem
 
 
 def build_sparse_profile_embedding(input_data: SparseEmbeddingInput) -> SparseEmbeddingResult:
@@ -56,12 +57,11 @@ def _profile_feature_rows(users: list[UserProfile]) -> list[dict[str, float]]:
             f"state:{user.state.lower()}": 1.0,
             f"education:{user.education.lower()}": 1.0,
             f"industry:{user.industry.lower()}": 1.0,
-            f"timezone:{user.timezone.lower()}": 1.0,
             f"occupation:{(user.occupation or '').lower()}": 1.0,
             f"age_bucket:{_age_bucket(user.age)}": 1.0,
         }
         for interest in user.interests:
-            row[f"interest:{interest.lower()}"] = 1.0
+            row[f"interest:{_stem(interest)}"] = 1.0
         for language in user.languages:
             row[f"language:{language.lower()}"] = 1.0
         rows.append(row)

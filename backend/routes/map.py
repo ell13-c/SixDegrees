@@ -75,6 +75,7 @@ def _fetch_map_response(user_id: str) -> dict:
                 "y": node.y,
                 "tier": node.tier,
                 "nickname": node.nickname,
+                "display_name": node.nickname,
                 "is_suggestion": node.is_suggestion,
             }
             for node in nodes

@@ -105,13 +105,7 @@ def test_release_global_compute_lock_success(monkeypatch):
     )
 
 
-def test_setup_scheduler_registers_global_and_warm_only_jobs(monkeypatch):
-    mock_sb = MagicMock()
-    mock_sb.rpc.return_value.execute.return_value = SimpleNamespace(
-        data=[{"timezone": "UTC"}, {"timezone": "America/New_York"}]
-    )
-    monkeypatch.setattr("services.map_pipeline.scheduler.get_supabase_client", lambda: mock_sb)
-
+def test_setup_scheduler_registers_single_global_job(monkeypatch):
     captured_jobs = []
 
     class FakeScheduler:
@@ -135,36 +129,12 @@ def test_setup_scheduler_registers_global_and_warm_only_jobs(monkeypatch):
     configured_scheduler = scheduler.setup_scheduler()
 
     assert isinstance(configured_scheduler, FakeScheduler)
-    assert len(captured_jobs) == 3
+    assert len(captured_jobs) == 1
 
-    global_job = next(job for job in captured_jobs if job["id"] == "global_compute_daily_utc")
+    global_job = captured_jobs[0]
+    assert global_job["id"] == "global_compute_daily_utc"
     assert global_job["func"] is scheduler._run_daily_global_compute
     assert global_job["trigger"] == {"hour": 0, "minute": 0, "timezone": "UTC"}
-
-    warm_jobs = [job for job in captured_jobs if job["id"].startswith("warm_only_")]
-    assert {job["args"][0] for job in warm_jobs} == {"UTC", "America/New_York"}
-    for warm_job in warm_jobs:
-        assert warm_job["func"] is scheduler._run_warm_only_for_timezone
-        assert warm_job["trigger"]["hour"] == 19
-        assert warm_job["trigger"]["minute"] == 0
-
-
-def test_warm_only_job_does_not_run_pipeline(monkeypatch):
-    mock_sb = _build_mock_supabase_with_payload([{"id": "u1"}, {"id": "u2"}])
-    monkeypatch.setattr("services.map_pipeline.scheduler.get_supabase_client", lambda: mock_sb)
-
-    run_pipeline_mock = MagicMock()
-    refresh_mock = MagicMock(return_value=False)
-    monkeypatch.setattr("services.map_pipeline.scheduler.run_pipeline_for_user", run_pipeline_mock)
-    monkeypatch.setattr("services.map_pipeline.scheduler.refresh_warm_payload_if_stale", refresh_mock)
-
-    scheduler._run_warm_only_for_timezone("UTC")
-
-    run_pipeline_mock.assert_not_called()
-    assert refresh_mock.call_count == 2
-    refresh_mock.assert_any_call("u1")
-    refresh_mock.assert_any_call("u2")
-    mock_sb.rpc.assert_called_once_with("get_profiles_by_timezone", {"p_timezone": "UTC"})
 
 
 def test_dedupe_skips_global_compute_when_lock_not_acquired(monkeypatch):

@@ -31,8 +31,8 @@ def test_get_map_other_user_returns_403(client):
     assert response.status_code == 403
 
 
-def test_get_map_requester_origin_and_mutual_primarys(client):
-    """GET /map/{user_id} anchors requester and marks only fallback as suggestions."""
+def test_get_map_requester_origin_and_all_users_present(client):
+    """GET /map/{user_id} anchors requester at origin and returns all users."""
     response = client.get("/map/test-user-uuid")
     assert response.status_code == 200
     data = response.json()
@@ -48,9 +48,9 @@ def test_get_map_requester_origin_and_mutual_primarys(client):
     assert mutual["x"] == pytest.approx(4.0)
     assert mutual["y"] == pytest.approx(6.0)
 
-    suggestion_nodes = [row for row in data["coordinates"] if row["is_suggestion"]]
-    assert suggestion_nodes
-    assert all(node["user_id"] != "test-user-uuid" for node in suggestion_nodes)
+    # All coordinate rows are present (requester + 3 others from conftest mock)
+    assert len(data["coordinates"]) == 4
+    assert all(node["is_suggestion"] is False for node in data["coordinates"])
 
 
 def test_map_contract_profiles_only(client, mock_sb):

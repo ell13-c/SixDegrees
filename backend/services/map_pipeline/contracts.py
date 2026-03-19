@@ -58,7 +58,7 @@ class RefinementInput:
     profile_edges: list[SparseEdge]
     raw_interaction_counts: RawInteractionCounts
     step_size: float = 0.08
-    iterations: int = 12
+    iterations: int = 36
     interaction_sensitivity: InteractionSensitivity | None = None
 
 

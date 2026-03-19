@@ -1,6 +1,20 @@
 # Per-field similarity functions.
 # All return a float in [0, 1]. Pure functions — no I/O.
 
+# Simple suffix-stripping stem for interests.
+# Unifies common variants: cooking/cook, hiking/hike, running/run, etc.
+# No external library — intentionally minimal.
+_STEM_SUFFIXES = ("ing", "ers", "er", "ed", "ion", "s")
+
+
+def _stem(word: str) -> str:
+    """Strip common English suffixes from a lowercase word."""
+    w = word.lower().strip()
+    for suffix in _STEM_SUFFIXES:
+        if w.endswith(suffix) and len(w) - len(suffix) >= 3:
+            return w[: -len(suffix)]
+    return w
+
 # Category maps for tiered categorical matching.
 # Extend these as you add more options to the profile form.
 
@@ -81,13 +95,17 @@ INDUSTRY_CATEGORIES: dict[str, str] = {
 }
 
 
-def jaccard(a: list[str], b: list[str]) -> float:
+def jaccard(a: list[str], b: list[str], stem: bool = False) -> float:
     """Jaccard similarity between two lists treated as sets.
 
-    Used for: interests, languages.
+    Used for: interests (stem=True), languages (stem=False).
     Returns 0.0 if both sets are empty.
     """
-    set_a, set_b = set(a), set(b)
+    if stem:
+        set_a = {_stem(x) for x in a}
+        set_b = {_stem(x) for x in b}
+    else:
+        set_a, set_b = set(a), set(b)
     if not set_a and not set_b:
         return 0.0
     intersection = len(set_a & set_b)

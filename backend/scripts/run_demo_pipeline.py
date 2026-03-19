@@ -1,4 +1,4 @@
-"""Generate Phase 24 notebook-ready before/after demo artifacts."""
+"""Generate notebook-ready before/after demo artifacts."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from services.map_pipeline.contracts import (
     InteractionSensitivity,
     InteractionSensitivityMode,
 )
-from services.map_pipeline.demo_pipeline import run_phase24_demo
+from services.map_pipeline.demo_pipeline import run_demo
 
 
 class _FixtureResponse:
@@ -97,7 +97,7 @@ def _load_demo_result(
     interaction_sensitivity: InteractionSensitivity | None = None,
 ) -> dict:
     if use_fixture_data:
-        return run_phase24_demo(
+        return run_demo(
             output_dir=output_dir,
             supabase=_build_fixture_supabase(),
             amplification_likes=amplification_likes,
@@ -106,14 +106,14 @@ def _load_demo_result(
         )
 
     try:
-        return run_phase24_demo(
+        return run_demo(
             output_dir=output_dir,
             amplification_likes=amplification_likes,
             amplification_comments=amplification_comments,
             interaction_sensitivity=interaction_sensitivity,
         )
     except Exception:
-        return run_phase24_demo(
+        return run_demo(
             output_dir=output_dir,
             supabase=_build_fixture_supabase(),
             amplification_likes=amplification_likes,

@@ -33,7 +33,7 @@ def translate_and_assign_tiers(
     Args:
         user_ids: Ordered list of user IDs (same order as raw_coords rows).
         raw_coords: (N, 2) ndarray of raw t-SNE coordinates (NOT yet translated).
-                    This is the direct output of project_tsne().
+                    This is the direct output of build_sparse_profile_embedding().
         requesting_user_id: The user who should be placed at (0.0, 0.0).
 
     Returns:

@@ -1,4 +1,4 @@
-"""Phase 24 demo pipeline runner for baseline and amplified scenarios."""
+"""Demo pipeline runner for baseline and amplified scenarios."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ from services.map_pipeline.contracts import InteractionSensitivity, RawInteracti
 from services.map_pipeline.pipeline import run_pipeline
 
 
-def run_phase24_demo(
+def run_demo(
     output_dir: str = "demo/data",
     supabase=None,
     amplification_likes: int = 1200,

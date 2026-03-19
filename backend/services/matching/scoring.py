@@ -27,7 +27,7 @@ FEATURE_COLS = list(DEFAULT_WEIGHTS.keys())
 def _similarity_vector(u1: UserProfile, u2: UserProfile) -> list[float]:
     """Compute the raw [0,1] similarity score per field for a pair of users."""
     return [
-        jaccard(u1.interests, u2.interests),
+        jaccard(u1.interests, u2.interests, stem=True),
         tiered_location(u1.city, u1.state, u2.city, u2.state),
         jaccard(u1.languages, u2.languages),
         tiered_categorical(u1.education, u2.education, FIELD_OF_STUDY_CATEGORIES),

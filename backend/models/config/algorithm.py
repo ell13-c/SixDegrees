@@ -17,15 +17,15 @@ INTERACTION_WEIGHTS: dict[str, float] = {
 
 INTERACTION_SENSITIVITY_BASELINE: dict[str, float] = {
     "strength_scale": 1.0,
-    "curve_exponent": 0.65,
-    "normalizer": 8.0,
-    "max_weight": 0.92,
+    "curve_exponent": 1.0,   # linear response — was 0.65 (sublinear, flattened the curve)
+    "normalizer": 1.0,       # placeholder — always overridden by dynamic 95th-pct at runtime
+    "max_weight": 0.80,      # was 0.92 — more headroom so interactions remain proportional
 }
 
 INTERACTION_SENSITIVITY_DEMO_STRONG: dict[str, float] = {
     "strength_scale": 1.0,
     "curve_exponent": 1.0,
-    "normalizer": 30.0,
+    "normalizer": 1.0,       # placeholder — always overridden by dynamic 95th-pct at runtime
     "max_weight": 0.99,
 }
 

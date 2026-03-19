@@ -9,9 +9,9 @@ from pathlib import Path
 from copy import deepcopy
 
 from scripts.seed_demo_map_data import ELEANOR_ID, WINSTON_ID, build_demo_dataset, canonical_pair
-from scripts.run_phase24_demo_pipeline import run as run_demo_artifact_writer
+from scripts.run_demo_pipeline import run as run_demo_artifact_writer
 from services.map_pipeline.contracts import InteractionSensitivity
-from services.map_pipeline.demo_pipeline import run_phase24_demo
+from services.map_pipeline.demo_pipeline import run_demo
 
 
 class _FakeResponse:
@@ -46,8 +46,8 @@ def _make_fake_supabase() -> _FakeSupabase:
     return _FakeSupabase(profiles, interactions)
 
 
-def test_run_phase24_demo_baseline_returns_expected_shapes():
-    result = run_phase24_demo(supabase=_make_fake_supabase())
+def test_run_demo_baseline_returns_expected_shapes():
+    result = run_demo(supabase=_make_fake_supabase())
 
     assert result["metadata"]["user_count"] == 100
     assert result["metadata"]["requesting_user_id"] == ELEANOR_ID
@@ -72,8 +72,8 @@ def test_run_phase24_demo_baseline_returns_expected_shapes():
     }
 
 
-def test_run_phase24_demo_honors_selected_sensitivity_mode():
-    result = run_phase24_demo(
+def test_run_demo_honors_selected_sensitivity_mode():
+    result = run_demo(
         supabase=_make_fake_supabase(),
         interaction_sensitivity=InteractionSensitivity(mode="strong-bounded"),
     )
@@ -82,8 +82,8 @@ def test_run_phase24_demo_honors_selected_sensitivity_mode():
     assert result["metadata"]["interaction_sensitivity"]["max_weight"] < 1.0
 
 
-def test_run_phase24_demo_amplified_increases_eleanor_winston_counts():
-    result = run_phase24_demo(supabase=_make_fake_supabase())
+def test_run_demo_amplified_increases_eleanor_winston_counts():
+    result = run_demo(supabase=_make_fake_supabase())
 
     pair = canonical_pair(ELEANOR_ID, WINSTON_ID)
     pair_row = result["comparison"]["pair"]
@@ -96,7 +96,7 @@ def test_run_phase24_demo_amplified_increases_eleanor_winston_counts():
     assert amplified["dms"] == baseline["dms"]
 
 
-def test_run_phase24_demo_artifacts_writes_expected_files(tmp_path):
+def test_run_demo_artifacts_writes_expected_files(tmp_path):
     summary = run_demo_artifact_writer(
         output_dir=str(tmp_path),
         use_fixture_data=True,
@@ -150,11 +150,11 @@ def test_run_phase24_demo_artifacts_writes_expected_files(tmp_path):
     }.issubset(set(distance_curve_rows[0].keys()))
 
 
-def test_run_phase24_demo_runner_executes_from_repo_root(tmp_path):
+def test_run_demo_runner_executes_from_repo_root(tmp_path):
     repo_root = Path(__file__).resolve().parents[3]
     command = [
         sys.executable,
-        "backend/scripts/run_phase24_demo_pipeline.py",
+        "backend/scripts/run_demo_pipeline.py",
         "--output-dir",
         str(tmp_path),
         "--use-fixture-data",

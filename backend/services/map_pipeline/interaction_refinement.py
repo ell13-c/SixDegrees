@@ -62,6 +62,34 @@ def refine_sparse_embedding(input_data: RefinementInput) -> RefinementResult:
     )
 
 
+def _dynamic_normalizer(
+    user_set: set[str],
+    raw_interaction_counts: dict[tuple[str, str], dict[str, int | float]],
+) -> float:
+    """Compute 95th-percentile weighted sum across all active pairs.
+
+    Using a percentile instead of the global max prevents one extremely
+    active pair from compressing every other pair's weight toward zero.
+    Floor at 1.0 avoids division-by-zero when all counts are zero.
+    """
+    weighted_sums: list[float] = []
+    for (uid_a, uid_b), counts in raw_interaction_counts.items():
+        if uid_a not in user_set or uid_b not in user_set:
+            continue
+        s = sum(
+            float(INTERACTION_WEIGHTS.get(k, 0.0)) * float(counts.get(k, 0.0))
+            for k in INTERACTION_WEIGHTS
+        )
+        if s > 0.0:
+            weighted_sums.append(s)
+
+    if not weighted_sums:
+        return 1.0
+
+    arr = np.array(weighted_sums, dtype=float)
+    return float(max(1.0, float(np.percentile(arr, 95))))
+
+
 def _build_interaction_edges(
     user_ids: list[str],
     raw_interaction_counts: dict[tuple[str, str], dict[str, int | float]],
@@ -71,12 +99,32 @@ def _build_interaction_edges(
     edges: list[SparseEdge] = []
     max_weight = float(interaction_sensitivity.max_weight or 1.0)
 
+    # Normalizer: use caller-provided value when it's explicitly calibrated (> 1.0),
+    # otherwise fall back to the dynamic 95th-percentile of the current data distribution.
+    # Passing normalizer > 1.0 lets demo/test callers set the scale so the full
+    # interaction range maps to a smooth [0, max_weight] gradient rather than
+    # saturating immediately when one pair dominates the background distribution.
+    explicit_normalizer = interaction_sensitivity.normalizer
+    if explicit_normalizer is not None and float(explicit_normalizer) > 1.0:
+        resolved_normalizer = float(explicit_normalizer)
+    else:
+        resolved_normalizer = _dynamic_normalizer(user_set, raw_interaction_counts)
+
+    # Build a copy of sensitivity with the resolved normalizer injected
+    resolved_sensitivity = InteractionSensitivity(
+        mode=interaction_sensitivity.mode,
+        strength_scale=interaction_sensitivity.strength_scale,
+        curve_exponent=interaction_sensitivity.curve_exponent,
+        normalizer=resolved_normalizer,
+        max_weight=interaction_sensitivity.max_weight,
+    )
+
     for (uid_a, uid_b), counts in raw_interaction_counts.items():
         if uid_a not in user_set or uid_b not in user_set:
             continue
 
         interaction_weight, weighted_interactions, sensitivity_multiplier = (
-            _interaction_weight(counts, interaction_sensitivity)
+            _interaction_weight(counts, resolved_sensitivity)
         )
         if interaction_weight <= 0.0:
             continue

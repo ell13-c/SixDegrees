@@ -41,6 +41,7 @@ def write_coordinates(
             "user_id": entry["user_id"],
             "x": entry["x"],
             "y": entry["y"],
+            "tier": int(entry.get("tier", 3)),
             "version_date": version_date_value,
             "computed_at": computed_at_value,
         }

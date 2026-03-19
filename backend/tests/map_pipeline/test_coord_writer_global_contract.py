@@ -59,7 +59,7 @@ def test_write_coordinates_calls_global_upsert_rpc_with_required_fields(monkeypa
     assert len(rows) == 2
 
     for row in rows:
-        assert set(row.keys()) == {"user_id", "x", "y", "version_date", "computed_at"}
+        assert set(row.keys()) == {"user_id", "x", "y", "tier", "version_date", "computed_at"}
         assert row["user_id"].startswith("u-")
         assert isinstance(row["x"], float)
         assert isinstance(row["y"], float)
