@@ -34,7 +34,6 @@ describe('ClosenessMap', () => {
     })
     expect(wrapper.findAll('.cl-node-group')).toHaveLength(3)
   })
-  // more tests added in Step 1.4
 
   it('renders YOU text at the center node', () => {
     const wrapper = mount(ClosenessMap, {
