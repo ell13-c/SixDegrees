@@ -50,7 +50,7 @@
       <button class="refresh-btn" @click="fetchMap">Retry</button>
     </div>
 
-    <div v-else-if="!nodes.length" class="state-box">
+    <div v-else-if="!rawCoordinates.length" class="state-box">
       <p>No connections yet. Add friends to build your map!</p>
     </div>
 
@@ -283,77 +283,49 @@ function timeAgo(iso) {
 }
 function goToProfile(userId) { router.push(`/profile/${userId}`) }
 
-// ─── MOCK DATA (swap out fetchMap body when backend is ready) ─────────────────
-const MOCK_CONNECTIONS = [
-  // Tier 0 — Inner Circle (2 people)
-  { user_id: 'mock-1', display_name: 'A',      tier: 0, x:  0.6,  y:  0.8 },
-  { user_id: 'mock-2', display_name: 'N',  tier: 0, x: -0.7,  y:  0.5 },
-
-  // Tier 1 — Close friends (3 people)
-  { user_id: 'mock-3', display_name: 'B',   tier: 1, x:  0.3,  y: -0.9 },
-  { user_id: 'mock-4', display_name: 'C',        tier: 1, x:  0.95, y:  0.2 },
-  { user_id: 'mock-5', display_name: 'D',       tier: 1, x: -0.5,  y: -0.7 },
-
-  // Tier 2 — Friends (4 people)
-  { user_id: 'mock-6', display_name: 'E',       tier: 2, x:  0.1,  y:  0.9 },
-  { user_id: 'mock-7', display_name: 'F',      tier: 2, x: -0.9,  y:  0.1 },
-  { user_id: 'mock-8', display_name: 'G',    tier: 2, x:  0.7,  y: -0.6 },
-  { user_id: 'mock-9', display_name: 'H',   tier: 2, x: -0.3,  y:  0.85},
-
-  // Tier 3 — Acquaintances (3 people)
-  { user_id: 'mock-10', display_name: 'I',    tier: 3, x:  0.4,  y:  0.7 },
-  { user_id: 'mock-11', display_name: 'J',  tier: 3, x: -0.8,  y: -0.4 },
-  { user_id: 'mock-12', display_name: 'K', tier: 3, x:  0.85, y:  0.5 },
-
-  // Tier 4 — Distant (2 people)
-  { user_id: 'mock-13', display_name: 'L', tier: 4, x: -0.2,  y: -0.95},
-  { user_id: 'mock-14', display_name: 'M',  tier: 4, x:  0.55, y: -0.8 },
-]
-
 async function fetchMap() {
   loading.value = true
   error.value = null
-
-  // Simulate network delay
-  await new Promise(r => setTimeout(r, 1000))
-
-  rawCoordinates.value = MOCK_CONNECTIONS
-  computedAt.value = new Date().toISOString()
-  loading.value = false
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!user || !session) { error.value = 'Not logged in.'; return }
+    const res = await fetch(`${API_BASE}/map/${user.id}`, {
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+    if (res.status === 404) { await triggerAndReload(); return }
+    if (!res.ok) throw new Error(`Server error: ${res.status}`)
+    const data = await res.json()
+    rawCoordinates.value = data.coordinates || []
+    computedAt.value = data.computed_at || null
+  } catch (e) {
+    error.value = e.message || 'Failed to load map.'
+  } finally {
+    loading.value = false
+  }
 }
 
-/*
-    //TODO: replace fetchMap body with this when backend is ready:
-    async function fetchMap() {
-        loading.value = true
-        error.value = null
-        try {
-            const { data: { user } } = await supabase.auth.getUser()
-            const { data: { session } } = await supabase.auth.getSession()
-            if (!user || !session) { error.value = 'Not logged in.'; return }
-            const res = await fetch(`${API_BASE}/map/${user.id}`, {
-            headers: { Authorization: `Bearer ${session.access_token}` },
-            })
-            if (res.status === 404) { await triggerAndReload(false); return }
-            if (!res.ok) throw new Error(`Server error: ${res.status}`)
-            const data = await res.json()
-            rawCoordinates.value = data.coordinates || []
-            computedAt.value = data.computed_at || null
-        } catch (e) {
-            error.value = e.message || 'Failed to load map.'
-        } finally {
-            loading.value = false
-        }
-    }
-*/
-
-async function triggerAndReload(silent = false) {
+async function triggerAndReload() {
   triggering.value = true
-  await new Promise(r => setTimeout(r, 800))
-  rawCoordinates.value = MOCK_CONNECTIONS
-  computedAt.value = new Date().toISOString()
-  triggering.value = false
-  loading.value = false
+  error.value = null
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!user || !session) { error.value = 'Not logged in.'; return }
+    const res = await fetch(`${API_BASE}/map/trigger/${user.id}`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+    if (!res.ok) throw new Error(`Trigger failed: ${res.status}`)
+    const data = await res.json()
+    rawCoordinates.value = data.coordinates || []
+    computedAt.value = data.computed_at || null
+  } catch (e) {
+    error.value = e.message || 'Failed to compute map.'
+  } finally {
+    triggering.value = false
+    loading.value = false
+  }
 }
 
 function onResize() {

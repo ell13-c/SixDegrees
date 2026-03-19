@@ -78,7 +78,7 @@ describe('PeopleMap toggle', () => {
       ok: true,
       status: 200,
       json: vi.fn().mockResolvedValue({
-        coordinates: [],
+        coordinates: [{ user_id: 'u1', x: 0.1, y: 0.2, tier: 1, display_name: 'Test' }],
         computed_at: new Date().toISOString(),
         ...responseOverride,
       }),
@@ -87,7 +87,7 @@ describe('PeopleMap toggle', () => {
   }
 
   async function flush() {
-    await new Promise(r => setTimeout(r, 1100))
+    await new Promise(r => setTimeout(r, 50))
   }
 
   it('shows Connections view by default (ClosenessMap not rendered)', async () => {
@@ -109,5 +109,34 @@ describe('PeopleMap toggle', () => {
     await wrapper.find('[data-view="closeness"]').trigger('click')
     await wrapper.find('[data-view="connections"]').trigger('click')
     expect(wrapper.findComponent(ClosenessMap).exists()).toBe(false)
+  })
+})
+
+describe('PeopleMap API wiring', () => {
+  afterEach(() => vi.unstubAllGlobals())
+
+  it('calls trigger endpoint when GET /map returns 404, and uses trigger response directly', async () => {
+    const triggerPayload = {
+      coordinates: [{ user_id: 'user-1', x: 0, y: 0, tier: 1, display_name: 'Me' }],
+      computed_at: new Date().toISOString(),
+    }
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({ ok: false, status: 404, json: vi.fn() })
+      .mockResolvedValueOnce({ ok: true, status: 200, json: vi.fn().mockResolvedValue(triggerPayload) })
+    vi.stubGlobal('fetch', fetchMock)
+
+    mount(PeopleMap)
+    await new Promise(r => setTimeout(r, 100))
+
+    // First call: GET /map/user-1
+    expect(fetchMock.mock.calls[0][0]).toContain('/map/user-1')
+    expect(fetchMock.mock.calls[0][1]?.method).toBeUndefined() // GET has no explicit method
+
+    // Second call: POST /map/trigger/user-1
+    expect(fetchMock.mock.calls[1][0]).toContain('/map/trigger/user-1')
+    expect(fetchMock.mock.calls[1][1]?.method).toBe('POST')
+
+    // Only 2 calls total — no redundant second GET
+    expect(fetchMock).toHaveBeenCalledTimes(2)
   })
 })
