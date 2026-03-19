@@ -47,6 +47,7 @@ CLAUDE.md
 .playwright-mcp
 opencode.json
 AGENTS.md
+docs/
 
 # Python test cache
 .pytest_cache/
