@@ -609,4 +609,5 @@ onBeforeUnmount(() => window.removeEventListener('resize', onResize))
   color: #60d4f7;
   background: rgba(96, 212, 247, 0.07);
 }
+
 </style>
