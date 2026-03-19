@@ -44,6 +44,7 @@ CLAUDE.md
 .claude/
 .playwright
 .playwright-cli
+.playwright-mcp
 opencode.json
 AGENTS.md
 
