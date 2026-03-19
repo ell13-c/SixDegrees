@@ -77,6 +77,7 @@ const props = defineProps({
   rawCoordinates: { type: Array, required: true },
   svgW: { type: Number, default: 800 },
   svgH: { type: Number, default: 560 },
+  computedAt: { type: String, default: null },
 })
 
 const router = useRouter()

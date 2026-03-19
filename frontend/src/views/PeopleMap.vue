@@ -56,7 +56,7 @@
 
     <template v-else>
       <div v-if="activeView === 'connections'" class="canvas-wrap" ref="canvasWrap">
-        <svg ref="svgEl" class="map-svg" :viewBox="`0 0 ${svgW} ${svgH}`" :width="svgW" :height="svgH">
+        <svg class="map-svg" :viewBox="`0 0 ${svgW} ${svgH}`" :width="svgW" :height="svgH">
           <defs>
             <filter v-for="t in [0,1,2,3,4]" :key="'f'+t" :id="'glow-'+t" x="-50%" y="-50%" width="200%" height="200%">
               <feGaussianBlur :stdDeviation="t === 0 ? 6 : 3" result="blur" />
@@ -152,9 +152,10 @@
           :rawCoordinates="rawCoordinates"
           :svgW="svgW"
           :svgH="svgH"
+          :computedAt="computedAt"
         />
         <div class="map-footer">
-          <span>{{ rawCoordinates.length > 0 ? rawCoordinates.length - 1 : 0 }} connection{{ rawCoordinates.length - 1 !== 1 ? 's' : '' }}</span>
+          <span>{{ rawCoordinates.length > 0 ? rawCoordinates.length - 1 : 0 }} connection{{ (rawCoordinates.length > 0 ? rawCoordinates.length - 1 : 0) !== 1 ? 's' : '' }}</span>
           <span v-if="computedAt"> · Updated {{ timeAgo(computedAt) }}</span>
         </div>
       </div>
@@ -523,13 +524,6 @@ onBeforeUnmount(() => window.removeEventListener('resize', onResize))
   align-items: center;
 }
 
-.demo-badge {
-  color: #a78bfa;
-  border: 1px solid #3a2f6a;
-  border-radius: 999px;
-  padding: 0.1rem 0.6rem;
-  font-size: 0.65rem;
-}
 
 .spinner {
   display: inline-block;

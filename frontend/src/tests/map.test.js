@@ -65,6 +65,10 @@ describe('ClosenessMap', () => {
     expect(() => mount(ClosenessMap, {
       props: { rawCoordinates: allZero, svgW: 800, svgH: 560 },
     })).not.toThrow()
+    const wrapper = mount(ClosenessMap, {
+      props: { rawCoordinates: allZero, svgW: 800, svgH: 560 },
+    })
+    expect(wrapper.findAll('.cl-node-group')).toHaveLength(0)
   })
 })
 
