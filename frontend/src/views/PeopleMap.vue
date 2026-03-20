@@ -102,7 +102,6 @@
           >{{ initials(n.display_name) }}</text>
         </g>
 
-        <!-- ✅ FIX: tooltip has :transform so it follows the node -->
         <g
           v-if="hoveredNode"
           style="pointer-events: none"
@@ -137,6 +136,7 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
+import { supabase } from '../lib/supabase' 
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8000'
 
@@ -209,6 +209,7 @@ const nodes = computed(() => {
       result.push({
         ...c,
         tier,
+        display_name: c.nickname || c.display_name || '',
         px: cx.value + ringR * Math.cos(angle),
         py: cy.value + ringR * Math.sin(angle),
       })
@@ -250,7 +251,7 @@ function timeAgo(iso) {
   return `${Math.floor(hrs / 24)}d ago`
 }
 function goToProfile(userId) { router.push(`/profile/${userId}`) }
-
+/*
 // ─── MOCK DATA (swap out fetchMap body when backend is ready) ─────────────────
 const MOCK_CONNECTIONS = [
   // Tier 0 — Inner Circle (2 people)
@@ -278,6 +279,9 @@ const MOCK_CONNECTIONS = [
   { user_id: 'mock-14', display_name: 'M',  tier: 4, x:  0.55, y: -0.8 },
 ]
 
+
+
+
 async function fetchMap() {
   loading.value = true
   error.value = null
@@ -290,7 +294,8 @@ async function fetchMap() {
   loading.value = false
 }
 
-/*
+*/
+
     //TODO: replace fetchMap body with this when backend is ready:
     async function fetchMap() {
         loading.value = true
@@ -306,6 +311,8 @@ async function fetchMap() {
             if (!res.ok) throw new Error(`Server error: ${res.status}`)
             const data = await res.json()
             rawCoordinates.value = data.coordinates || []
+            console.log('coordinates:', data.coordinates[0])
+
             computedAt.value = data.computed_at || null
         } catch (e) {
             error.value = e.message || 'Failed to load map.'
@@ -313,15 +320,29 @@ async function fetchMap() {
             loading.value = false
         }
     }
-*/
+
 
 async function triggerAndReload(silent = false) {
   triggering.value = true
-  await new Promise(r => setTimeout(r, 800))
-  rawCoordinates.value = MOCK_CONNECTIONS
-  computedAt.value = new Date().toISOString()
-  triggering.value = false
-  loading.value = false
+  error.value = null
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!user || !session) { error.value = 'Not logged in.'; return }
+    const res = await fetch(`${API_BASE}/map/trigger/${user.id}`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${session.access_token}` },
+    })
+    if (!res.ok) throw new Error(`Trigger failed: ${res.status}`)
+    const data = await res.json()
+    rawCoordinates.value = data.coordinates || []
+    computedAt.value = data.computed_at || null
+  } catch (e) {
+    if (!silent) error.value = e.message || 'Failed to refresh map.'
+  } finally {
+    triggering.value = false
+    loading.value = false
+  }
 }
 
 function onResize() {
