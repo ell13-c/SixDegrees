@@ -148,14 +148,14 @@
       </div>
       <div v-else class="canvas-wrap">
         <ClosenessMap
-          :rawCoordinates="rawCoordinates"
+          :rawCoordinates="closenessCoordinates"
           :svgW="svgW"
           :svgH="svgH"
-          :computedAt="computedAt"
+          :computedAt="closenessComputedAt"
         />
         <div class="map-footer">
-          <span>{{ rawCoordinates.length > 0 ? rawCoordinates.length - 1 : 0 }} connection{{ (rawCoordinates.length > 0 ? rawCoordinates.length - 1 : 0) !== 1 ? 's' : '' }}</span>
-          <span v-if="computedAt"> · Updated {{ timeAgo(computedAt) }}</span>
+          <span>{{ closenessCoordinates.length > 0 ? closenessCoordinates.length - 1 : 0 }} connection{{ (closenessCoordinates.length > 0 ? closenessCoordinates.length - 1 : 0) !== 1 ? 's' : '' }}</span>
+          <span v-if="closenessComputedAt"> · Updated {{ timeAgo(closenessComputedAt) }}</span>
         </div>
       </div>
     </template>
@@ -189,6 +189,8 @@ const router = useRouter()
 const canvasWrap = ref(null)
 const rawCoordinates = ref([])
 const computedAt = ref(null)
+const closenessCoordinates = ref([])
+const closenessComputedAt = ref(null)
 const currentUserId = ref(null)
 const loading = ref(true)
 const triggering = ref(false)
@@ -300,6 +302,8 @@ async function fetchMap() {
     const data = await res.json()
     rawCoordinates.value = data.coordinates || []
     computedAt.value = data.computed_at || null
+    closenessCoordinates.value = data.coordinates || []
+    closenessComputedAt.value = data.computed_at || null
   } catch (e) {
     error.value = e.message || 'Failed to load map.'
   } finally {
