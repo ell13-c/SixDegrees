@@ -45,8 +45,8 @@
       <p>Loading your People Map…</p>
     </div>
 
-    <div v-else-if="error" class="state-box error-box">
-      <p>{{ error }}</p>
+    <div v-else-if="error" class="state-box">
+      <p>Your map hasn't been built yet. Start connecting with others to see your social network come to life.</p>
       <button class="refresh-btn" @click="fetchMap">Retry</button>
     </div>
 
@@ -190,6 +190,7 @@ const router = useRouter()
 const canvasWrap = ref(null)
 const rawCoordinates = ref([])
 const computedAt = ref(null)
+const currentUserId = ref(null)
 const loading = ref(true)
 const triggering = ref(false)
 const error = ref(null)
@@ -217,7 +218,7 @@ const nodes = computed(() => {
   if (!rawCoordinates.value.length) return []
 
   const byTier = {}
-  for (const c of rawCoordinates.value) {
+  for (const c of rawCoordinates.value.filter(c => c.user_id !== currentUserId.value)) {
     const t = Math.min(c.tier ?? 4, 4)
     if (!byTier[t]) byTier[t] = []
     byTier[t].push(c)
@@ -290,6 +291,7 @@ async function fetchMap() {
     const { data: { user } } = await supabase.auth.getUser()
     const { data: { session } } = await supabase.auth.getSession()
     if (!user || !session) { error.value = 'Not logged in.'; return }
+    currentUserId.value = user.id
     const res = await fetch(`${API_BASE}/map/${user.id}`, {
       headers: { Authorization: `Bearer ${session.access_token}` },
     })
@@ -312,6 +314,7 @@ async function triggerAndReload() {
     const { data: { user } } = await supabase.auth.getUser()
     const { data: { session } } = await supabase.auth.getSession()
     if (!user || !session) { error.value = 'Not logged in.'; return }
+    currentUserId.value = user.id
     const res = await fetch(`${API_BASE}/map/trigger/${user.id}`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${session.access_token}` },
@@ -537,12 +540,22 @@ onBeforeUnmount(() => window.removeEventListener('resize', onResize))
 @keyframes spin { to { transform: rotate(360deg); } }
 
 .view-controls {
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  gap: 1rem;
   margin-bottom: 1.25rem;
-  justify-content: center;
-  flex-wrap: wrap;
+  width: 100%;
+  max-width: 900px;
+}
+
+.toggle-group {
+  grid-column: 2;
+}
+
+.view-controls .refresh-btn {
+  grid-column: 3;
+  justify-self: end;
+  margin-left: 1.5rem;
 }
 
 .toggle-group {

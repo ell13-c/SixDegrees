@@ -48,8 +48,8 @@ def test_get_map_requester_origin_and_all_users_present(client):
     assert mutual["x"] == pytest.approx(4.0)
     assert mutual["y"] == pytest.approx(6.0)
 
-    # All coordinate rows are present (requester + 3 others from conftest mock)
-    assert len(data["coordinates"]) == 4
+    # Requester + their 2 friends only (suggestion-user-uuid filtered out)
+    assert len(data["coordinates"]) == 3
     assert all(node["is_suggestion"] is False for node in data["coordinates"])
 
 

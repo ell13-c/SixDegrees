@@ -12,7 +12,7 @@
 
       <!-- Add Friend Test Box -->
       <div class="test-box add-friend-box">
-        <h3 class="test-title">Add Friend API Test</h3>
+        <h3 class="test-title">Add Friend</h3>
         <input 
           v-model="testNickname" 
           placeholder="Enter an existing nickname" 

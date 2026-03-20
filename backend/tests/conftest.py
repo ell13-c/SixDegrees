@@ -120,6 +120,14 @@ def _build_mock_supabase() -> MagicMock:
 
     mock_sb.rpc.side_effect = _rpc_side_effect
 
+    # Mock sb.table("profiles").select("friends").eq("id", ...).execute()
+    # Used by _fetch_map_response to filter coordinates to friends only.
+    _friends_result = MagicMock()
+    _friends_result.execute.return_value.data = [
+        {"friends": [MUTUAL_USER_ID, ONE_WAY_USER_ID]}
+    ]
+    mock_sb.table.return_value.select.return_value.eq.return_value = _friends_result
+
     return mock_sb
 
 

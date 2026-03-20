@@ -26,7 +26,16 @@ def _fetch_map_response(user_id: str) -> dict:
     )
 
     required_fields = {"user_id", "x", "y", "computed_at", "version_date"}
-    valid_rows = [r for r in rows if required_fields.issubset(r)]
+    all_valid_rows = [r for r in rows if required_fields.issubset(r)]
+
+    if not all_valid_rows:
+        raise HTTPException(status_code=404, detail="Map not yet computed for this user")
+
+    # Filter to requesting user + their friends only
+    friend_res = sb.table("profiles").select("friends").eq("id", user_id).execute()
+    raw_friends = (friend_res.data[0].get("friends") or []) if friend_res.data else []
+    allowed_ids = {user_id} | {str(f) for f in raw_friends}
+    valid_rows = [r for r in all_valid_rows if str(r["user_id"]) in allowed_ids]
 
     if not valid_rows:
         raise HTTPException(status_code=404, detail="Map not yet computed for this user")

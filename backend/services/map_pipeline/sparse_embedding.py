@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import numpy as np
-from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction import DictVectorizer
+from sklearn.manifold import TSNE
 from sklearn.neighbors import NearestNeighbors
 from sklearn.preprocessing import normalize
 
@@ -31,9 +31,20 @@ def build_sparse_profile_embedding(input_data: SparseEmbeddingInput) -> SparseEm
     profile_matrix = vectorizer.fit_transform(_profile_feature_rows(users))
     profile_matrix = normalize(profile_matrix, norm="l2", axis=1)
 
-    projection = TruncatedSVD(n_components=2, random_state=input_data.random_state)
-    coordinates = projection.fit_transform(profile_matrix)
+    perplexity = min(30, max(5, (n_users - 1) // 3))
+    tsne = TSNE(
+        n_components=2,
+        perplexity=perplexity,
+        metric="cosine",
+        init="random",
+        max_iter=1000,
+        random_state=input_data.random_state,
+    )
+    coordinates = tsne.fit_transform(profile_matrix.toarray())
     coordinates = coordinates - coordinates.mean(axis=0, keepdims=True)
+    scale = float(np.abs(coordinates).max())
+    if scale > 1e-9:
+        coordinates = coordinates / scale
 
     neighbor_count = min(max(2, input_data.neighbor_count), n_users - 1)
     neighbors = NearestNeighbors(n_neighbors=neighbor_count + 1, metric="cosine")
