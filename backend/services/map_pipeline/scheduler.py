@@ -29,6 +29,7 @@ logger = logging.getLogger(__name__)
 GLOBAL_COMPUTE_JOB_ID = "global_compute_daily_utc"
 GLOBAL_COMPUTE_UTC_HOUR = 0
 GLOBAL_COMPUTE_UTC_MINUTE = 0
+GLOBAL_COMPUTE_ENABLED = False  # Set to True to re-enable nightly pipeline
 
 
 def _rows_list(data: object) -> list[dict]:
@@ -63,6 +64,10 @@ def _select_global_compute_user_id() -> str | None:
 
 def _run_daily_global_compute() -> None:
     """Run one daily global recompute guarded by a dedupe lock."""
+    if not GLOBAL_COMPUTE_ENABLED:
+        logger.info("Scheduler: global compute is disabled (GLOBAL_COMPUTE_ENABLED=False)")
+        return
+
     acquired, owner_token = acquire_global_compute_lock(ttl_seconds=DEFAULT_LOCK_TTL_SECONDS)
     if not acquired:
         logger.info("Scheduler: skipped duplicate global compute run (lock not acquired)")
