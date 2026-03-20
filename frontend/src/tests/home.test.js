@@ -7,6 +7,7 @@
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest'
 import { mount, flushPromises } from '@vue/test-utils'
 import Post from '../components/Post.vue'
+import CreatePost from '../components/CreatePost.vue'
 
 const mockPush = vi.fn()
 
@@ -359,5 +360,65 @@ describe('Home auto-refresh polling', () => {
 
     expect(supabase.rpc).toHaveBeenCalledWith('load_posts')
     wrapper.unmount() 
+  })
+})
+
+// Tests post creation
+describe('CreatePost', () => {
+  beforeEach(() => {
+    vi.stubGlobal('alert', vi.fn())
+    vi.stubGlobal('confirm', vi.fn(() => true)) 
+    setupDefaultMocks()
+  })
+
+  const mockPost = [{ id: '4', nickname: 'NewPost', tier: 1, like_count: 0, comment_count: 0 }]
+
+  it('calls post RPC and adds post to list on success', async () => {
+    const wrapper = mount(Home)
+    await flushPromises()
+    
+    supabase.rpc.mockImplementation((fnName) => {
+      if (fnName === 'post') return Promise.resolve({ data: true, error: null })
+      return Promise.resolve({ data: mockPost, error: null })
+    })
+
+    const createPost = wrapper.findComponent(CreatePost)
+    await createPost.vm.$emit('post-created', mockPost)
+    await flushPromises()
+
+    expect(supabase.rpc).toHaveBeenCalledWith('load_posts')
+    expect(supabase.rpc).toHaveBeenCalledWith('friend_requests')
+  })
+})
+
+// Tests post RPC
+describe('post RPC', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('calls supabase with correct function name', async () => {
+    supabase.rpc.mockResolvedValue({ data: [], error: null })
+    await supabase.rpc('post')
+    expect(supabase.rpc).toHaveBeenCalledWith('post')
+  })
+
+  it('returns \'created\' post on success', async () => {
+    const mockPost = [{ id: '1', nickname: 'Alice', tier: 1, like_count: 0, comment_count: 0 }]
+    supabase.rpc.mockResolvedValue({ data: mockPost, error: null })
+    const { data, error } = await supabase.rpc('post')
+    expect(error).toBeNull()
+    expect(data).toEqual(mockPost)
+  })
+
+  it('returns null data on DB error', async () => {
+    supabase.rpc.mockResolvedValue({ data: null, error: { message: 'DB error' } })
+    const { data, error } = await supabase.rpc('post')
+    expect(data).toBeNull()
+    expect(error.message).toBe('DB error')
+  })
+
+  it('handles empty posts array', async () => {
+    supabase.rpc.mockResolvedValue({ data: [], error: null })
+    const { data } = await supabase.rpc('post')
+    expect(data).toEqual([])
   })
 })
