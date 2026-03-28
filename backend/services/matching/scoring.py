@@ -1,5 +1,6 @@
 import numpy as np
 from models.user import UserProfile
+from config.settings import PROFILE_WEIGHTS
 from services.matching.similarity import (
     jaccard,
     tiered_location,
@@ -34,6 +35,45 @@ def _similarity_vector(u1: UserProfile, u2: UserProfile) -> list[float]:
         tiered_categorical(u1.industry, u2.industry, INDUSTRY_CATEGORIES),
         inverse_distance_age(u1.age, u2.age),
     ]
+
+
+def _profile_similarity(u1: UserProfile, u2: UserProfile) -> float:
+    """Weighted similarity score in [0, 1] between two users."""
+    scores = [
+        jaccard(u1.interests, u2.interests, stem=True),
+        tiered_location(u1.city, u1.state, u2.city, u2.state),
+        jaccard(u1.languages, u2.languages),
+        tiered_categorical(u1.education, u2.education, FIELD_OF_STUDY_CATEGORIES),
+        tiered_categorical(u1.industry, u2.industry, INDUSTRY_CATEGORIES),
+        inverse_distance_age(u1.age, u2.age),
+    ]
+    weights = [
+        PROFILE_WEIGHTS["interests"],
+        PROFILE_WEIGHTS["location"],
+        PROFILE_WEIGHTS["languages"],
+        PROFILE_WEIGHTS["education"],
+        PROFILE_WEIGHTS["industry"],
+        PROFILE_WEIGHTS["age"],
+    ]
+    return sum(s * w for s, w in zip(scores, weights))
+
+
+def get_top_matches(
+    current_user: UserProfile,
+    all_users: list[UserProfile],
+    top_n: int = 10,
+) -> list[dict]:
+    """Return top_n most similar users sorted by descending similarity score.
+
+    all_users must NOT include current_user.
+    Returns list of {"user": UserProfile, "similarity_score": float}.
+    """
+    scored = [
+        {"user": u, "similarity_score": round(_profile_similarity(current_user, u), 4)}
+        for u in all_users
+    ]
+    scored.sort(key=lambda x: x["similarity_score"], reverse=True)
+    return scored[:top_n]
 
 
 def build_similarity_matrix(users: list[UserProfile]) -> np.ndarray:

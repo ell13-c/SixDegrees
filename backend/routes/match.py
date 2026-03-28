@@ -6,8 +6,9 @@ and returns the top N most similar users (excluding the requester).
 
 from fastapi import APIRouter, Depends, HTTPException
 from routes.deps import get_current_user
-from config.supabase import get_supabase_client
+from config.settings import get_supabase_client
 from models.user import UserProfile
+from services.matching.scoring import get_top_matches
 
 router = APIRouter(prefix="/match", tags=["match"])
 
@@ -19,54 +20,27 @@ def get_matches(
 ):
     """Return the top_n most similar users to the authenticated user."""
     sb = get_supabase_client()
-    rows = sb.rpc("get_all_profiles", {}).execute().data
+    rows = sb.table("profiles").select("*").execute().data
 
     if not rows:
         raise HTTPException(status_code=404, detail="No profiles found")
 
-    # Build UserProfile objects from DB rows
-    users = []
-    user_index = None
-    for i, row in enumerate(rows):
-        up = UserProfile(
-            id=row["id"],
-            nickname=row.get("nickname") or "",
-            interests=row.get("interests") or [],
-            city=row.get("city") or "",
-            state=row.get("state") or "",
-            age=row.get("age") or 0,
-            languages=row.get("languages") or [],
-            education=row.get("education") or "",
-            industry=row.get("industry") or "",
-            timezone=row.get("timezone") or "UTC",
-            occupation=row.get("occupation"),
-        )
-        users.append(up)
-        if row["id"] == acting_user_id:
-            user_index = i
+    all_users = [UserProfile(**r) for r in rows]
+    current_user = next((u for u in all_users if u.id == acting_user_id), None)
 
-    if user_index is None:
+    if current_user is None:
         raise HTTPException(status_code=404, detail="Your profile was not found. Call PUT /profile first.")
 
-    from services.matching.scoring import build_similarity_matrix, apply_weights, similarity_to_distance
+    others = [u for u in all_users if u.id != acting_user_id]
+    matches = get_top_matches(current_user, others, top_n)
 
-    sim_matrix = build_similarity_matrix(users)
-    weighted = apply_weights(sim_matrix)
-    dist_matrix = similarity_to_distance(weighted)
-
-    # Get similarity scores for the acting user (1 - distance = similarity)
-    similarity_row = 1.0 - dist_matrix[user_index]
-
-    # Build result list: all users except the acting user, sorted by descending similarity
-    results = []
-    for i, user in enumerate(users):
-        if i == user_index:
-            continue
-        results.append({
-            "user_id": user.id,
-            "nickname": rows[i].get("nickname") or "",
-            "similarity_score": round(float(similarity_row[i]), 4),
-        })
-
-    results.sort(key=lambda x: x["similarity_score"], reverse=True)
-    return {"matches": results[:top_n]}
+    return {
+        "matches": [
+            {
+                "user_id": m["user"].id,
+                "nickname": m["user"].nickname,
+                "similarity_score": m["similarity_score"],
+            }
+            for m in matches
+        ]
+    }
