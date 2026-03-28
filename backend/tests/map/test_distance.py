@@ -31,13 +31,16 @@ def make_profile(uid: str, **kwargs) -> UserProfile:
 
 def make_interaction(uid_a: str, uid_b: str, like_count: int = 0,
                      comment_count: int = 0, dm_count: int = 0) -> dict:
-    """Return an interaction row with canonical ordering (uid_a < uid_b)."""
+    """Return an interaction row with canonical ordering (uid_a < uid_b).
+
+    Column names match the DB schema: likes_count, comments_count, dm_count.
+    """
     a, b = min(uid_a, uid_b), max(uid_a, uid_b)
     return {
         "user_id_a": a,
         "user_id_b": b,
-        "like_count": like_count,
-        "comment_count": comment_count,
+        "likes_count": like_count,
+        "comments_count": comment_count,
         "dm_count": dm_count,
     }
 

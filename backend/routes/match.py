@@ -4,7 +4,7 @@ Requires a valid Supabase JWT. Reads profiles to build similarity scores
 and returns the top N most similar users (excluding the requester).
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from routes.deps import get_current_user
 from config.settings import get_supabase_client
 from models.user import UserProfile
@@ -16,7 +16,7 @@ router = APIRouter(prefix="/match", tags=["match"])
 @router.get("")
 def get_matches(
     acting_user_id: str = Depends(get_current_user),
-    top_n: int = 10,
+    top_n: int = Query(default=10, ge=1, le=100),
 ):
     """Return the top_n most similar users to the authenticated user."""
     sb = get_supabase_client()

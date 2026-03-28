@@ -137,3 +137,10 @@ def test_match_401_no_auth(client_no_auth):
     """Returns 401 when no JWT is supplied."""
     resp = client_no_auth.get("/match")
     assert resp.status_code == 401
+
+
+def test_match_top_n_negative_returns_422():
+    """GET /match?top_n=-1 must return 422 (FastAPI query validation)."""
+    for tc in _make_client_with_profiles(_FULL_PROFILE_ROWS):
+        resp = tc.get("/match?top_n=-1")
+    assert resp.status_code == 422

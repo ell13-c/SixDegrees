@@ -24,7 +24,6 @@ class ProfileBody(BaseModel):
     languages: Optional[List[str]] = None
     industry: Optional[str] = None
     age: Optional[int] = None
-    is_onboarded: Optional[bool] = None
 
 
 @router.get("")
