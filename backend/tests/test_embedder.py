@@ -84,8 +84,8 @@ def test_cosine_sim_both_zero():
 
 
 def test_cosine_sim_result_clipped():
-    """Result is clipped to [0, 1] (no negative values)."""
+    """Anti-correlated vectors → clipped to 0.0, not a negative value."""
     a = np.array([1.0, 0.0])
-    b = np.array([0.0, 1.0])
+    b = np.array([-1.0, 0.0])   # raw cosine = -1.0 → must clip to 0.0
     result = cosine_sim(a, b)
-    assert 0.0 <= result <= 1.0
+    assert result == 0.0
