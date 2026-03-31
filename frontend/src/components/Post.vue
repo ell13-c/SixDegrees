@@ -51,6 +51,14 @@
       >
         <Trash2  :size="18" />
       </button>
+    
+      <button 
+        v-else-if="!isReported"
+        @click="handleReport" 
+        class="action-btn"
+      >
+        <Flag :size="18"/>
+      </button>
     </div>
     
     <div v-if="showComments" class="comments-section">
@@ -93,7 +101,7 @@
 <script setup>
 import { ref, computed, onMounted} from 'vue'
 import { supabase } from '../lib/supabase'
-import { Heart, MessageCircle, Lock, Users, Globe, Archive, Trash2 } from 'lucide-vue-next'
+import { Heart, MessageCircle, Lock, Users, Globe, Archive, Trash2, Flag } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { formatDate, tierLabel} from '../utils.js'
 
@@ -126,6 +134,7 @@ const comments = ref([])
 const isLiked = ref(false)
 const likeCount = ref(props.post.like_count || 0)
 const commentCount = ref(props.post.comment_count || 0)
+const isReported = ref(false)
 
 /**
  * Get first initial of nickname for avatar
@@ -198,6 +207,8 @@ onMounted(async () => {
   }
   
   await fetchUserLike()
+  
+  await fetchUserReport()
   
   const { data, error } = await supabase.rpc('like_count', { 
     post_id: props.post.id 
@@ -273,6 +284,46 @@ async function handleDeleteComment(commentId) {
     }
   } catch (err) {
     console.error('Delete comment error:', err)
+  }
+}
+
+/**
+ * Handles reporting/unreporting a post. 
+ * Checks if user is authenticated, then toggles report state in db and updates local state for instant UI feedback.
+ */
+async function handleReport() {
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+  
+  try {
+    if (isReported.value) {
+      // Unreport
+      await supabase.rpc('unreport_post', {
+        reported_post_id: props.post.id
+      })
+      
+      isReported.value = false
+    } else {
+      // Report
+      await supabase.rpc('report_post', {
+        reported_post_id: props.post.id
+      })
+      
+      isReported.value = true
+    }
+  } catch (err) {
+    console.error('Report error:', err)
+  }
+}
+
+// Check if current user has reported the post
+async function fetchUserReport() {
+  const { data, error } = await supabase.rpc('is_user_reported', {
+    post_id: props.post.id
+  })
+
+  if (!error && data) {
+    isReported.value = true
   }
 }
 
