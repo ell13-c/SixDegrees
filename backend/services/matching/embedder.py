@@ -8,7 +8,6 @@ import numpy as np
 from sentence_transformers import SentenceTransformer
 
 import config.settings as _cfg
-EMBEDDING_MODEL = _cfg.EMBEDDING_MODEL  # module-level alias — loaded once at import
 from models.user import UserProfile
 
 _model: SentenceTransformer | None = None
@@ -18,7 +17,7 @@ def _get_model() -> SentenceTransformer:
     """Return the shared model instance, loading it on first call."""
     global _model
     if _model is None:
-        _model = SentenceTransformer(EMBEDDING_MODEL)
+        _model = SentenceTransformer(_cfg.EMBEDDING_MODEL)
     return _model
 
 
@@ -81,13 +80,15 @@ def embed_profiles(profiles: list[UserProfile]) -> np.ndarray:
     non_empty_indices = [i for i, t in enumerate(texts) if t]
     non_empty_texts = [texts[i] for i in non_empty_indices]
 
-    dim = 384
-    result = np.zeros((n, dim), dtype=np.float32)
-
     if non_empty_texts:
         model = _get_model()
+        dim = model.get_sentence_embedding_dimension()
+        result = np.zeros((n, dim), dtype=np.float32)
         encoded = model.encode(non_empty_texts, convert_to_numpy=True)
         for out_idx, src_idx in enumerate(non_empty_indices):
             result[src_idx] = encoded[out_idx]
-
-    return result
+        return result
+    else:
+        # All profiles have empty text — return zero vectors
+        # Use 384 as default dim (all-MiniLM-L6-v2) since model isn't loaded yet
+        return np.zeros((n, 384), dtype=np.float32)

@@ -32,7 +32,7 @@ def _build_embeddings(profiles: list[UserProfile]) -> dict[str, np.ndarray]:
 
 def _text_score(u1: UserProfile, u2: UserProfile, embeddings: dict[str, np.ndarray]) -> float:
     """Cosine sim (embedding) or Jaccard fallback depending on EMBEDDING_FIELDS."""
-    if "interests" in _cfg.EMBEDDING_FIELDS or "bio" in _cfg.EMBEDDING_FIELDS:
+    if _cfg.EMBEDDING_FIELDS:
         return cosine_sim(embeddings[u1.id], embeddings[u2.id])
     return jaccard(u1.interests, u2.interests, stem=True)
 
