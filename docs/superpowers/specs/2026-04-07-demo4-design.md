@@ -41,6 +41,10 @@ Demo-4 requirements:
 | `embed_profiles([empty_profile])` | Zero vector output |
 | `get_top_matches(u, others)` | Each `similarity_score` always in `[0.0, 1.0]` |
 
+**Model loading strategy:** Hypothesis will generate profiles with non-empty text, which would trigger the real sentence-transformer model. To keep the property tests fast and offline-safe, patch `model.encode()` to return deterministic random vectors (seeded), not `embed_profiles` itself — this preserves the real batching/indexing logic while avoiding the 90MB download. Tests that require the real model are marked `@pytest.mark.slow` and live in the existing `test_embedder.py` integration section.
+
+**`build_profile_text` invariant:** All property tests that assert on `build_profile_text` output must patch `config.settings.EMBEDDING_FIELDS` to a known value (`["interests", "bio"]`) so invariants don't depend on the live config.
+
 **Dependencies to add:** `hypothesis`, `hypothesis[numpy]` to `requirements.txt`
 
 **Evidence for demo:** Run with `pytest tests/test_embedder_property.py -v` — show Hypothesis generating hundreds of examples and all passing.
@@ -62,6 +66,8 @@ Demo-4 requirements:
 3. `test_full_pipeline_regression` — run `distance.build_combined_distance()` on fixed `PipelineInput`, then `projector.project()`, compare shape and that diagonal is zero
 
 **Snapshot regeneration:** Delete `tests/fixtures/umap_regression_snapshot.npy` and run `pytest tests/map/test_pipeline_regression.py::test_umap_regression --snapshot-update` (or a small helper script). Documented in a comment at the top of the test file.
+
+**Version pinning note:** Snapshot reproducibility is guaranteed only within a fixed `umap-learn` version. The test file header and README must document the pinned version from `requirements.txt`. Regeneration is expected when upgrading `umap-learn` — this is not a bug.
 
 **Evidence for demo:** Show the snapshot file, show the test passing, then deliberately change a constant in `projector.py` and show the test failing.
 
@@ -141,6 +147,11 @@ cd backend && source venv/bin/activate && uvicorn app:app --reload
 # Terminal 2
 cd frontend && npm run dev
 ```
+
+**Prerequisites:**
+- Backend running: `cd backend && uvicorn app:app --reload`
+- Frontend running: `cd frontend && npm run dev`
+- Seed data present: `cd backend && python scripts/seed.py` (provides 100 users including friends to send requests to)
 
 **Test flow:**
 
