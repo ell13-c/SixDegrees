@@ -185,3 +185,19 @@ class TestEdgeCountCalculation:
 
         call_kwargs = mock_record.call_args.kwargs
         assert call_kwargs["edge_count"] == 2
+
+
+def test_run_pipeline_for_user_rejects_empty_string():
+    """run_pipeline_for_user raises ValueError for empty user_id."""
+    import pytest
+    from services.map.pipeline import run_pipeline_for_user
+    with pytest.raises(ValueError, match="non-empty string"):
+        run_pipeline_for_user("")
+
+
+def test_run_pipeline_for_user_rejects_non_string():
+    """run_pipeline_for_user raises ValueError for non-string user_id."""
+    import pytest
+    from services.map.pipeline import run_pipeline_for_user
+    with pytest.raises(ValueError, match="non-empty string"):
+        run_pipeline_for_user(None)

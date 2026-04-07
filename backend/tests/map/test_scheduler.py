@@ -38,3 +38,19 @@ def test_run_job_skipped_does_not_call_pipeline_run():
         asyncio.run(_run_job())
 
     mock_pipeline_run.assert_not_called()
+
+
+def test_run_job_skips_when_lock_held(monkeypatch):
+    """_run_job returns immediately without calling pipeline.run when lock is held."""
+    import config.settings as cfg
+    from services.map import scheduler as sched_mod
+    from unittest.mock import MagicMock
+
+    monkeypatch.setattr(cfg, "GLOBAL_COMPUTE_ENABLED", True)
+    monkeypatch.setattr(sched_mod, "acquire_lock", lambda: False)
+
+    mock_run = MagicMock()
+    monkeypatch.setattr("services.map.pipeline.run", mock_run)
+
+    asyncio.run(sched_mod._run_job())
+    mock_run.assert_not_called()
