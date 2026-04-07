@@ -46,7 +46,3 @@ app.include_router(map_router)
 app.include_router(interactions_router)
 app.include_router(profile_router)
 app.include_router(match_router)
-
-@app.get("/test-cors")
-async def test_cors():
-    return {"msg": "CORS works!"}
