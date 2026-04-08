@@ -136,6 +136,34 @@ describe('Post.vue', () => {
     })
   })
 
+  // ── SECTION: Image Gallery ──────────────────────────────────────────────────
+
+  describe('Image Gallery', () => {
+    it('renders images when post has image_urls', async () => {
+      const wrapper = mountPost({ image_urls: ['http://example.com/img1.jpg', 'http://example.com/img2.jpg'] })
+      await flushPromises()
+      
+      const images = wrapper.findAll('.post-img')
+      expect(images).toHaveLength(2)
+      expect(images[0].attributes('src')).toBe('http://example.com/img1.jpg')
+    })
+
+    it('applies single-image class when there is exactly one image', async () => {
+      const wrapper = mountPost({ image_urls: ['http://example.com/img1.jpg'] })
+      await flushPromises()
+      
+      const imageContainer = wrapper.find('.post-image-item')
+      expect(imageContainer.classes()).toContain('single-image')
+    })
+
+    it('does not render gallery if image_urls is empty', async () => {
+      const wrapper = mountPost({ image_urls: [] })
+      await flushPromises()
+      
+      expect(wrapper.find('.post-gallery').exists()).toBe(false)
+    })
+  })
+
   // ── SECTION: Own Post vs Other Post ─────────────────────────────────────────
 
   describe('Own post vs other post', () => {
@@ -330,6 +358,30 @@ describe('Post.vue', () => {
         comment_content: 'Great post!',
       })
       expect(input.element.value).toBe('')
+    })
+    it('deletes a comment after confirmation', async () => {
+      vi.spyOn(window, 'confirm').mockReturnValue(true)
+      
+      const comments = [
+        { id: 'c1', nickname: 'bob', content: 'Delete me!', user_id: 'user-bob' },
+      ]
+
+      const wrapper = mountPost({ comment_count: 1 }, 'user-bob')
+      await flushPromises()
+
+      mockRpc.mockResolvedValueOnce({ data: comments, error: null }) // load_comments
+      await wrapper.findAll('.action-btn')[1].trigger('click')
+      await flushPromises()
+
+      mockRpc.mockResolvedValueOnce({ data: true, error: null }) // delete_comment RPC
+      await wrapper.find('.delete-comment-btn').trigger('click')
+      await flushPromises()
+
+      expect(mockRpc).toHaveBeenCalledWith('delete_comment', { comment_id: 'c1' })
+      
+      expect(wrapper.text()).not.toContain('Delete me!')
+      
+      window.confirm.mockRestore()
     })
   })
 

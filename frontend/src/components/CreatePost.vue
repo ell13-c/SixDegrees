@@ -38,13 +38,13 @@
           <select v-model="selectedTier">
             <option value="inner_circle">Inner Circle Only</option>
             <option value="second_degree">Inner Circle + 2nd Degree</option>
-            <option value="third_degree">All Friends</option>
+            <option value="third_degree">Inner Circle + 3rd Degree</option>
           </select>
         </div>
         
         <button 
           @click="handlePost" 
-          :disabled="!content.trim() || posting"
+          :disabled="(!content.trim() && previewUrls.length === 0) || posting"          
           class="post-btn"
         >
           {{ posting ? 'Posting...' : 'Post' }}

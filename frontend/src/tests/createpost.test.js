@@ -191,6 +191,25 @@ describe('CreatePost.vue', () => {
       expect(wrapper.find('.error').exists()).toBe(true)
       expect(wrapper.find('.error').text()).toContain('Not authenticated')
     })
+    it('allows posting if there is an image but no text', async () => {
+      const wrapper = mountCreatePost()
+      stubURL()
+
+      const file = new File(['img'], 'photo.jpg', { type: 'image/jpeg' })
+      await selectFiles(wrapper, [file])
+      await flushPromises()
+
+      expect(wrapper.find('button.post-btn').attributes('disabled')).toBeUndefined()
+
+      await wrapper.find('button.post-btn').trigger('click')
+      await flushPromises()
+
+      // Ensure it sends the post with empty text but includes the image
+      expect(mockRpc).toHaveBeenCalledWith('post', expect.objectContaining({
+        post_content: '',
+        post_image_urls: ['http://example.com/img.jpg'],
+      }))
+    })
   })
 
   // ── SECTION: Tier Selector ──────────────────────────────────────────────────
@@ -306,7 +325,7 @@ describe('CreatePost.vue', () => {
 
       expect(wrapper.find('.error').text()).toContain('only JPEG, PNG, GIF, or WebP allowed')
     })
-    it('shows error when file size exceeds 15MB limit', async () => {
+    it('shows error when file size exceeds 20MB limit', async () => {
       const wrapper = mountCreatePost()
       stubURL()
 
