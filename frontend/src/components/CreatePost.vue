@@ -138,7 +138,6 @@ async function handlePost() {
     })
 
     const allPublicUrls = await Promise.all(uploadPromises)
-    console.log('Sending post_tier:', selectedTier.value, 'Type:', typeof selectedTier.value);
     // Call RPC to save post data (Make sure your SQL function accepts post_image_urls text[])
     const { data, error: postError } = await supabase.rpc('post', {
       post_content: content.value.trim(),
