@@ -5,7 +5,12 @@
       <button v-if="!isEditing && isOwnProfile" @click="startEditing" class="edit-btn-header">Edit Profile</button>
     </header>
 
-    <div id="main-profile-box">
+    <div v-if="!loaded" class="loading-state">
+      <div class="loading-spinner" />
+      <p>Loading profile…</p>
+    </div>
+
+    <div v-if="loaded" id="main-profile-box">
       <div class="profile-picture-container">
         <!-- Avatar click only triggers upload when on own profile in edit mode -->
         <div class="profile-pic-circle" :class="{ 'no-bg': profile.avatar_url }" @click="isOwnProfile && isEditing &&triggerUpload()">
@@ -108,7 +113,7 @@
       </div>
     </div>
 
-    <div id="hobbies-box">
+    <div v-if="loaded" id="hobbies-box">
       <h3>Interests</h3>
       
       <div v-if="!isEditing">
@@ -128,7 +133,7 @@
       </div>
     </div>
 
-    <div id="hobbies-box" style="margin-top: 1.5rem;">
+    <div v-if="loaded" id="hobbies-box" style="margin-top: 1.5rem;">
       <h3>Languages</h3>
       
       <div v-if="!isEditing">
@@ -160,6 +165,7 @@ const router = useRouter()
 const route = useRoute()
 
 const profile = ref({})
+const loaded = ref(false)
 const currentUserId = ref(null)
 const isEditing = ref(false)
 const saving = ref(false)
@@ -214,19 +220,27 @@ const friendCount = computed(() => {
   return profile.value.friends?.length || 0
 })
 
+const OWN_PROFILE_CACHE_KEY = 'sixdeg_own_profile_cache'
+
 /*
   Loads the target profile (either by user ID or nickname depending on route param format)
   Also checks friendship, pending request, and block status if viewing someone else's profile
 */
 async function loadProfile() {
   try {
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) {
-      error.value = 'Not logged in'
-      return
-    }
-
+    // getSession() reads from localStorage — no network round-trip
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) { error.value = 'Not logged in'; return }
+    const user = session.user
     currentUserId.value = user.id
+
+    // Show cached own profile immediately while the real fetch runs
+    if (!route.params.userId) {
+      try {
+        const cached = localStorage.getItem(OWN_PROFILE_CACHE_KEY)
+        if (cached) { profile.value = JSON.parse(cached); loaded.value = true }
+      } catch {}
+    }
 
     //if userid in route, load that profile, otherwise load current user's profile
     const targetUser = route.params.userId || user.id
@@ -242,6 +256,12 @@ async function loadProfile() {
 
     if (profileError) throw profileError
     profile.value = data || {}
+    loaded.value = true
+
+    // Cache own profile so next visit is instant
+    if (profile.value.id === user.id) {
+      try { localStorage.setItem(OWN_PROFILE_CACHE_KEY, JSON.stringify(profile.value)) } catch {}
+    }
 
     if (profile.value.id !== user.id) {
       const { data: friends } = await supabase.rpc('extended_friends', { max_tier: 1 })
@@ -325,7 +345,8 @@ async function saveProfile() {
     })
     
     if (updateError) throw updateError
-    
+
+    try { localStorage.removeItem(OWN_PROFILE_CACHE_KEY) } catch {}
     await loadProfile()
     isEditing.value = false
   } catch (err) {
@@ -482,6 +503,24 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 4rem;
+  color: #888;
+}
+.loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid #333;
+  border-top-color: #088F8F;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
 .page-container {
   display: flex;
   flex-direction: column;

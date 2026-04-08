@@ -1,0 +1,4 @@
+# file: /Users/BAEK/Code/sixDegrees/backend/services/map/diagnostics.py
+# hypothesis_version: 6.151.11
+
+['duration_ms', 'edge_count', 'error', 'pipeline_runs', 'status', 'user_count']

@@ -1,0 +1,4 @@
+# file: /Users/BAEK/Code/sixDegrees/backend/services/map/writer.py
+# hypothesis_version: 6.151.11
+
+['computed_at', 'user_id', 'user_id,x,y', 'user_positions', 'x', 'y']

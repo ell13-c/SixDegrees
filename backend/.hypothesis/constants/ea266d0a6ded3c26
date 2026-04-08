@@ -1,0 +1,4 @@
+# file: /Users/BAEK/Code/sixDegrees/backend/models/user.py
+# hypothesis_version: 6.151.11
+
+['before', 'ignore', 'interests', 'languages']

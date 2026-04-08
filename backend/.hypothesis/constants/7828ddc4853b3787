@@ -1,0 +1,4 @@
+# file: /Users/BAEK/Code/sixDegrees/backend/routes/profile.py
+# hypothesis_version: 6.151.11
+
+[404, '/profile', 'Profile not found', 'Profile updated', 'detail', 'get_profile', 'id', 'interests', 'is_onboarded', 'p_data', 'p_id', 'profile', 'upsert_profile']

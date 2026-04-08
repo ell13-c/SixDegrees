@@ -94,7 +94,7 @@
 
 <script setup>
 
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { supabase } from '../lib/supabase'
 import CreatePost from '../components/CreatePost.vue'
@@ -105,17 +105,28 @@ const router = useRouter()
 
 // Auth redirect
 const session = ref(null)
+let authListener = null
 
 onMounted(async () => {
   const { data } = await supabase.auth.getSession()
   session.value = data.session
   if (!session.value) router.push('/login')
+
+  // Listen for sign-out only (ignore token refresh events)
+  const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
+    if (event === 'SIGNED_OUT') {
+      session.value = null
+      router.push('/login')
+    } else if (newSession) {
+      session.value = newSession
+      localStorage.setItem('supabase_token', newSession.access_token)
+    }
+  })
+  authListener = subscription
 })
 
-// Also redirect if user logs out mid-session
-supabase.auth.onAuthStateChange((_event, newSession) => {
-  session.value = newSession
-  if (!newSession) router.push('/login')
+onUnmounted(() => {
+  authListener?.unsubscribe()
 })
 
 /*
@@ -200,10 +211,8 @@ const handleReject = async (friendNickname) => {
   }
 }
 
-// arr to store all posts from the feed 
-const posts = ref([])
-
-// loading state while fetching posts
+// All fetched posts (max_tier=3); filtered client-side for instant tier switching
+const allPosts = ref([])
 const loading = ref(false)
 const pollInterval = ref(null)
 
@@ -216,9 +225,12 @@ onMounted(async () => {
     return
   }
 
+  currentUserId.value = data.session?.user?.id ?? null
+
   // Fetch initial data
   fetchIncomingRequests()
   loadPosts()
+  prefetchProfile(data.session)
   
   // Poll posts every 30s
   pollInterval.value = setInterval(loadPosts, 30000)
@@ -229,21 +241,24 @@ onUnmounted(() => {
 })
 
 const selectedTierFilter = ref(3)
+const currentUserId = ref(null)
+
+// Client-side filter — instant, no network round-trip
+// Own posts always show regardless of tier filter
+const posts = computed(() =>
+  allPosts.value.filter(p => p.tier <= selectedTierFilter.value || p.user_id === currentUserId.value)
+)
 
 /*
-  Fetches posts from the database filtered by the selected tier, ordered by recency
+  Always fetches all posts (max_tier=3); tier filtering is done client-side.
 */
 async function loadPosts() {
-  loading.value = true
-  
+  if (allPosts.value.length === 0) loading.value = true
+
   try {
-    const { data, error } = await supabase.rpc('load_posts', {
-      max_tier: selectedTierFilter.value
-    })
-    
+    const { data, error } = await supabase.rpc('load_posts', { max_tier: 3 })
     if (error) throw error
-    
-    posts.value = data || []
+    allPosts.value = data || []
   } catch (err) {
     console.error('Error loading posts:', err)
   } finally {
@@ -261,6 +276,17 @@ const goToProfile = (userNickname) => {
 /*
   Logs the current user out, clears local storage, and redirects to login
 */
+// Warms the profile cache in the background so /profile loads instantly
+async function prefetchProfile(session) {
+  if (!session) return
+  try {
+    const { data, error } = await supabase.rpc('get_user_profile', { target_user_id: session.user.id })
+    if (!error && data) {
+      localStorage.setItem('sixdeg_own_profile_cache', JSON.stringify(data))
+    }
+  } catch {}
+}
+
 async function handleLogout() {
   await supabase.auth.signOut()
   localStorage.removeItem('supabase_token')
@@ -281,7 +307,7 @@ async function handleDeletePost(postId) {
     if (error) throw error
 
     if (data) {
-      posts.value = posts.value.filter(p => p.id !== postId)
+      allPosts.value = allPosts.value.filter(p => p.id !== postId)
       alert('Post deleted successfully.')
     } else {
       alert('You do not have permission to delete this post.')

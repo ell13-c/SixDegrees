@@ -26,6 +26,7 @@ class PipelineResult:
 class EgoMapNode:
     user_id: str
     nickname: str
+    display_name: str       # alias for nickname, used by ClosenessMap
     avatar_url: str | None
     x: float
     y: float

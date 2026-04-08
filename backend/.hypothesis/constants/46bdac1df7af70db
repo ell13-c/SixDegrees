@@ -1,0 +1,4 @@
+# file: /Users/BAEK/Code/sixDegrees/backend/routes/match.py
+# hypothesis_version: 6.151.11
+
+[100, 404, '*', '/match', 'No profiles found', 'match', 'matches', 'nickname', 'profiles', 'similarity_score', 'user', 'user_id']
