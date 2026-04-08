@@ -65,6 +65,7 @@ describe('CreatePost.vue', () => {
     URL.createObjectURL = vi.fn()
     URL.revokeObjectURL = vi.fn()
     })
+  
 
   // ── SECTION: Rendering ──────────────────────────────────────────────────────
 
@@ -203,6 +204,18 @@ describe('CreatePost.vue', () => {
       expect(options[1].attributes('value')).toBe('second_degree')
       expect(options[2].attributes('value')).toBe('third_degree')
     })
+    it('posts with the default inner_circle tier', async () => {
+      const wrapper = mountCreatePost()
+      
+      await wrapper.find('textarea').setValue('Inner circle post!')
+      await wrapper.find('button.post-btn').trigger('click')
+      await flushPromises()
+
+      // Ensure the correct string 'inner_circle' is sent to the backend
+      expect(mockRpc).toHaveBeenCalledWith('post', expect.objectContaining({
+        post_tier: 'inner_circle',
+      }))
+    })
 
     it('posts with the selected tier', async () => {
       const wrapper = mountCreatePost()
@@ -293,5 +306,21 @@ describe('CreatePost.vue', () => {
 
       expect(wrapper.find('.error').text()).toContain('only JPEG, PNG, GIF, or WebP allowed')
     })
+    it('shows error when file size exceeds 15MB limit', async () => {
+      const wrapper = mountCreatePost()
+      stubURL()
+
+      // Create a fake file and manually force its size property to 25MB 
+      const hugeFile = new File([''], 'huge.jpg', { type: 'image/jpeg' })
+      Object.defineProperty(hugeFile, 'size', { value: 25 * 1024 * 1024 })
+      
+      await selectFiles(wrapper, [hugeFile])
+      await flushPromises()
+
+      // Verify the error box exists and contains the correct warning
+      expect(wrapper.find('.error').exists()).toBe(true)
+      expect(wrapper.find('.error').text()).toContain('max file size')
+    })
   })
+  
 })

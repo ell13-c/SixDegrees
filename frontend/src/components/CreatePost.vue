@@ -38,7 +38,7 @@
           <select v-model="selectedTier">
             <option value="inner_circle">Inner Circle Only</option>
             <option value="second_degree">Inner Circle + 2nd Degree</option>
-            <option value="third_degree">All Friends</option>
+            <option value="third_degree">+3rd Degree</option>
           </select>
         </div>
         
@@ -86,7 +86,7 @@ function onFileSelected(event) {
       return
     }
     if (file.size > MAX_FILE_SIZE) {
-      error.value = `${file.name}: max file size is 5MB`
+      error.value = `${file.name}: max file size is 20MB`
       return
     }
   }
