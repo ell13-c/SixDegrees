@@ -17,6 +17,7 @@ _MOCK_EGO_RESPONSE = EgoMapResponse(
         EgoMapNode(
             user_id="other-user-uuid",
             nickname="Other User",
+            display_name="Other User",
             avatar_url=None,
             x=3.0,
             y=4.0,
