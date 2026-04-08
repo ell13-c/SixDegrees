@@ -27,17 +27,18 @@
   
    
     <div class="post-content">
-      {{ post.content }}
-    </div>
+      <p class="post-content">{{ post.content }}</p>
 
-    <div v-if="post.post_image_urls?.length" class="post-images">
-      <img
-        v-for="(url, i) in post.post_image_urls"
-        :key="i"
-        :src="url"
-        class="post-image"
-        loading="lazy"
-      />
+      <div v-if="post.image_urls && post.image_urls.length > 0" class="post-gallery">
+        <div 
+          v-for="(url, index) in post.image_urls" 
+          :key="index" 
+          class="post-image-item"
+          :class="{ 'single-image': post.image_urls.length === 1 }"
+        >
+          <img :src="url" alt="Post content" class="post-img" loading="lazy" />
+        </div>
+      </div>
     </div>
     
     <div class="post-actions-wrapper">
@@ -216,12 +217,22 @@ async function fetchUserLike() {
 
 onMounted(async () => {
   const { data: { user } } = await supabase.auth.getUser()
+  console.log("post data check:", JSON.parse(JSON.stringify(props.post)));
   if (user) { 
     currentUserId.value = user.id 
   }
   
   await fetchUserLike()
+  
   await fetchUserReport()
+  
+  const { data, error } = await supabase.rpc('like_count', { 
+    post_id: props.post.id 
+  })
+  
+  if (!error && data !== null) {
+    likeCount.value = data
+  }
 })
 
 /**
@@ -336,6 +347,7 @@ async function fetchUserReport() {
 </script>
 
 <style scoped>
+
 .avatar {
   overflow: hidden;
 }
@@ -582,24 +594,42 @@ async function fetchUserReport() {
 }
 
 .delete-comment-btn:hover {
-  background: rgba(255, 68, 68, 0.1);
-  color: #ff6b6b;
-  transform: scale(1.1);
+  background: rgba(255, 68, 68, 0.1); 
+  color: #ff6b6b; 
+  transform: scale(1.1); 
+}
+/* --- New Gallery Styles --- */
+.post-gallery {
+  display: grid;
+  gap: 8px;
+  margin-top: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.post-images {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
+.post-image-item {
+  width: 100%;
+  aspect-ratio: 16 / 9; 
+  background: #1a1a1a;
+  border-radius: 4px;
+  overflow: hidden;
 }
 
-.post-image {
-  max-width: 100%;
-  max-height: 400px;
-  border-radius: 6px;
-  object-fit: cover;
-  flex: 1 1 calc(50% - 0.25rem);
-  border: 1px solid #444;
+.post-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; 
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.post-img:hover {
+  transform: scale(1.02); 
+}
+
+.post-image-item.single-image {
+  aspect-ratio: auto; 
+  max-height: 500px;
 }
 </style>
