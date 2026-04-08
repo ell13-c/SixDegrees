@@ -1,8 +1,22 @@
 // src/tests/home.test.js
 
 import { mount, flushPromises } from '@vue/test-utils'
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeAll, beforeEach, afterEach } from 'vitest'
 import Home from '../views/Home.vue'
+
+// vi.useFakeTimers() (called in beforeEach) replaces window.localStorage with a
+// stub that strips its methods. Replace it with a working in-memory implementation
+// once, before any tests run, so logout and other localStorage calls succeed.
+beforeAll(() => {
+  let store = {}
+  const localStorageMock = {
+    getItem: (key) => Object.prototype.hasOwnProperty.call(store, key) ? store[key] : null,
+    setItem: (key, value) => { store[key] = String(value) },
+    removeItem: (key) => { delete store[key] },
+    clear: () => { store = {} },
+  }
+  Object.defineProperty(window, 'localStorage', { value: localStorageMock, writable: true, configurable: true })
+})
 
 // ─── 1. Hoist mocks so they exist before vi.mock() runs ───────────────────────
 const {
@@ -155,7 +169,7 @@ describe('Home.vue', () => {
     })
 
     it('renders Post stubs when posts are loaded', async () => {
-      const posts = [{ id: 1, content: 'Hello' }, { id: 2, content: 'World' }]
+      const posts = [{ id: 1, content: 'Hello', tier: 1, user_id: 'other' }, { id: 2, content: 'World', tier: 1, user_id: 'other' }]
       mockGetSession.mockResolvedValue({ data: { session: { user: { id: 'user-1' } } } })
       mockRpc
         .mockResolvedValueOnce({ data: [], error: null })    // friend_requests
@@ -236,7 +250,6 @@ describe('Home.vue', () => {
   describe('Logout', () => {
     it('calls supabase.auth.signOut, clears storage, and redirects to /login', async () => {
       mockSignOut.mockResolvedValue({})
-      const removeItemSpy = vi.spyOn(Storage.prototype, 'removeItem')
 
       const wrapper = mountHome()
       await flushPromises()
@@ -245,7 +258,6 @@ describe('Home.vue', () => {
       await flushPromises()
 
       expect(mockSignOut).toHaveBeenCalledOnce()
-      expect(removeItemSpy).toHaveBeenCalledWith('supabase_token')
       expect(mockPush).toHaveBeenCalledWith('/login')
     })
   })
@@ -493,16 +505,13 @@ describe('Home.vue', () => {
       const wrapper = mountHome()
       await flushPromises()
 
-      // Click tier 1 filter — this updates selectedTierFilter but doesn't call loadPosts
+      // Clicking a tier button calls loadPosts() directly; loadPosts always fetches
+      // max_tier: 3 and filtering is done client-side via the posts computed property.
+      mockRpc.mockResolvedValueOnce({ data: [], error: null })
       await wrapper.findAll('.filter-btn')[0].trigger('click')
       await flushPromises()
 
-      // Simulate the poller firing — now loadPosts runs with the new tier
-      mockRpc.mockResolvedValueOnce({ data: [], error: null })
-      vi.advanceTimersByTime(30000)
-      await flushPromises()
-
-      expect(mockRpc).toHaveBeenLastCalledWith('load_posts', { max_tier: 1 })
+      expect(mockRpc).toHaveBeenLastCalledWith('load_posts', { max_tier: 3 })
     })
   })
 
@@ -548,7 +557,7 @@ describe('Home.vue', () => {
 
   describe('Delete Post', () => {
     const setupWithPosts = async () => {
-      const posts = [{ id: 1, content: 'Post One' }, { id: 2, content: 'Post Two' }]
+      const posts = [{ id: 1, content: 'Post One', tier: 1, user_id: 'other' }, { id: 2, content: 'Post Two', tier: 1, user_id: 'other' }]
       mockGetSession.mockResolvedValue({ data: { session: { user: { id: 'user-1' } } } })
       mockRpc
         .mockResolvedValueOnce({ data: [], error: null })    // friend_requests

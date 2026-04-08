@@ -18,7 +18,6 @@ class ProfileBody(BaseModel):
     state: str | None = None
     education: str | None = None
     occupation: str | None = None
-    timezone: str | None = None
     interests: list[str] | None = None
     languages: list[str] | None = None
     industry: str | None = None

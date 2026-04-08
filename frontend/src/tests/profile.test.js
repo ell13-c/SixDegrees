@@ -20,7 +20,8 @@ vi.mock('vue-router', () => {
 vi.mock('../lib/supabase', () => {
   const supabase = {
     auth: {
-      getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'user-1' } } })
+      getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'user-1' } } }),
+      getSession: vi.fn().mockResolvedValue({ data: { session: { user: { id: 'user-1' } } } }),
     },
     rpc: vi.fn()
   }

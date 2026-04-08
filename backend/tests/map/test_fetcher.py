@@ -41,7 +41,7 @@ PROFILE_ROWS = [
 ]
 
 INTERACTION_ROWS = [
-    {"uid_a": "user-1", "uid_b": "user-2", "like_count": 1, "comment_count": 2, "dm_count": 0},
+    {"uid_a": "user-1", "uid_b": "user-2", "likes_count": 1, "comments_count": 2, "dm_count": 0},
 ]
 
 

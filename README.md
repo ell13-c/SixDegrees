@@ -75,7 +75,6 @@ cd backend
 source venv/bin/activate
 python -m pytest -q                          # all tests
 python -m pytest --cov=. --cov-report=term-missing  # with coverage
-python -m pytest tests/test_embedder_property.py -v  # fuzz tests
 ```
 
 ---
@@ -102,56 +101,5 @@ Claude wrote the majority of the test suite in this project:
 
 This freed up development time for decisions that actually required judgment: what invariants to assert, what edge cases matter, and what coverage gaps to fill.
 
-### 3. Property-based test design
-
-Designing Hypothesis fuzz tests requires identifying mathematical invariants — properties that must hold for *all* inputs, not just a handful of examples. Claude helped translate informal correctness requirements into precise, testable invariants, and also caught a test design error: the strategy was generating vectors of independent random shapes, which would cause a shape mismatch error instead of testing the actual function. The fix required a composite strategy that ties both vectors to the same randomly chosen dimension.
-
 All generated code was reviewed before commit. Test assertions were manually verified against expected math. Architectural decisions (UMAP pipeline structure, embedding fallback, interaction pair canonical ordering) were made by the developers and implemented with AI assistance.
 
----
-
-## Quality Verification
-
-### Test suite
-
-138 unit and integration tests across 22 test files. All Supabase calls are mocked — no live DB calls in the test suite.
-
-```bash
-python -m pytest -q   # 138 passed
-```
-
-### Coverage
-
-97% line coverage across all backend modules.
-
-```bash
-python -m pytest --cov=. --cov-report=term-missing
-```
-
-### Fuzz testing (Hypothesis)
-
-Property-based tests in `tests/test_embedder_property.py` verify mathematical invariants on embedding functions across hundreds of auto-generated inputs. Hypothesis shrinks failing examples to minimal counterexamples automatically.
-
-```bash
-pytest tests/test_embedder_property.py -v
-```
-
-Invariants tested:
-- `cosine_sim` always returns `[0.0, 1.0]`, never NaN
-- `cosine_sim(v, v) == 1.0` for all non-zero vectors
-- `build_profile_text` never raises, always returns `str`
-- `embed_profiles` always returns shape `(N, 384)`, no NaN, dtype float32
-- `get_top_matches` scores always in `[0.0, 1.0]`
-
-### Regression testing (UMAP)
-
-Snapshot regression in `tests/map/test_pipeline_regression.py` pins UMAP output to a committed `.npy` file. The test fails if any geometry-breaking change is introduced to the pipeline.
-
-```bash
-pytest tests/map/test_pipeline_regression.py -v
-```
-
-To regenerate after a `umap-learn` upgrade:
-```bash
-cd backend && python tests/fixtures/generate_snapshot.py
-```
