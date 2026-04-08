@@ -62,7 +62,12 @@
       <!-- Tier Filter: controls which posts are shown based on friend proximity -->
       <div class="tier-filter">
         <span class="filter-label">Showing:</span>
-        <button v-for="tier in [1, 2, 3]" :key="tier" @click="selectedTierFilter= tier" :class="['filter-btn', { active: selectedTierFilter === tier }]">
+        <button 
+          v-for="tier in [1, 2, 3]" 
+          :key="tier" 
+          @click="selectedTierFilter = tier; loadPosts()" 
+          :class="['filter-btn', { active: selectedTierFilter === tier }]"
+        >
           {{ tierFilterLabel(tier) }}
         </button>
       </div>

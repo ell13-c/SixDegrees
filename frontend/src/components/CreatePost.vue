@@ -38,13 +38,13 @@
           <select v-model="selectedTier">
             <option value="inner_circle">Inner Circle Only</option>
             <option value="second_degree">Inner Circle + 2nd Degree</option>
-            <option value="third_degree">All Friends</option>
+            <option value="third_degree">Inner Circle + 3rd Degree</option>
           </select>
         </div>
         
         <button 
           @click="handlePost" 
-          :disabled="!content.trim() || posting"
+          :disabled="(!content.trim() && previewUrls.length === 0) || posting"          
           class="post-btn"
         >
           {{ posting ? 'Posting...' : 'Post' }}
@@ -86,7 +86,7 @@ function onFileSelected(event) {
       return
     }
     if (file.size > MAX_FILE_SIZE) {
-      error.value = `${file.name}: max file size is 5MB`
+      error.value = `${file.name}: max file size is 20MB`
       return
     }
   }
@@ -138,7 +138,6 @@ async function handlePost() {
     })
 
     const allPublicUrls = await Promise.all(uploadPromises)
-    console.log('Sending post_tier:', selectedTier.value, 'Type:', typeof selectedTier.value);
     // Call RPC to save post data (Make sure your SQL function accepts post_image_urls text[])
     const { data, error: postError } = await supabase.rpc('post', {
       post_content: content.value.trim(),

@@ -217,7 +217,6 @@ async function fetchUserLike() {
 
 onMounted(async () => {
   const { data: { user } } = await supabase.auth.getUser()
-  console.log("post data check:", JSON.parse(JSON.stringify(props.post)));
   if (user) { 
     currentUserId.value = user.id 
   }
