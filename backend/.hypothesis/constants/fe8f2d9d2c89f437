@@ -1,0 +1,4 @@
+# file: /Users/BAEK/Code/sixDegrees/backend/routes/map.py
+# hypothesis_version: 6.151.11
+
+[403, 503, '/map', '/trigger/{user_id}', '/{user_id}', 'computed_at', 'map', 'ok', 'status', 'user_positions']

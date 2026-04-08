@@ -1,0 +1,4 @@
+# file: /Users/BAEK/Code/sixDegrees/backend/routes/deps.py
+# hypothesis_version: 6.151.11
+
+['Bearer', 'WWW-Authenticate']

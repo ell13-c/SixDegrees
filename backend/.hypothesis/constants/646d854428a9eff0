@@ -1,0 +1,4 @@
+# file: /Users/BAEK/Code/sixDegrees/backend/services/map/ego.py
+# hypothesis_version: 6.151.11
+
+[404, '*', 'avatar_url', 'computed_at', 'id', 'nickname', 'profiles', 'user_id', 'user_positions', 'x', 'y']

@@ -1,0 +1,4 @@
+# file: /Users/BAEK/Code/sixDegrees/backend/routes/interactions.py
+# hypothesis_version: 6.151.11
+
+[400, '/comment', '/dm', '/interactions', '/like', '_count', 'comments', 'comments_count', 'detail', 'dm_count', 'dms', 'interactions', 'likes', 'likes_count', 'p_column', 'p_user_id_a', 'p_user_id_b', 's']

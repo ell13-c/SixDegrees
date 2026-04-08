@@ -1,0 +1,4 @@
+# file: /Users/BAEK/Code/sixDegrees/backend/services/map/lock.py
+# hypothesis_version: 6.151.11
+
+[3600, 'w']
