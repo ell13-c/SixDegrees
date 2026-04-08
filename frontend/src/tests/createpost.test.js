@@ -29,9 +29,14 @@ vi.mock('../lib/supabase', () => ({
 // ─── 3. Default mount helper ──────────────────────────────────────────────────
 const mountCreatePost = () => {
   mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
-  mockRpc.mockResolvedValue({
-    data: [{ id: 'post-1', content: 'Hello!' }],
-    error: null,
+  mockRpc.mockImplementation((fnName) => {
+    if (fnName === 'post') {
+      return Promise.resolve({data: [{ id: 'post-1', content: 'Hello!' }], error: null})
+    }
+    if (fnName === 'get_default_post_tier') {
+      return Promise.resolve({ data: 'inner_circle', error: null })
+    }
+    return Promise.resolve({ data: null, error: null })
   })
   mockUpload.mockResolvedValue({ error: null })
   mockGetPublicUrl.mockReturnValue({ data: { publicUrl: 'http://example.com/img.jpg' } })

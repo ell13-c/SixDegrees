@@ -46,7 +46,7 @@ def _build_mock_supabase() -> MagicMock:
     # rpc() calls are routed by function name via side_effect so that:
     # - get_all_interactions returns [] (no interaction rows — avoids KeyError on
     #   user_id_a/user_id_b when pipeline iterates interaction rows).
-    # - All other rpc() calls (get_profile, get_all_profiles, upsert_profile,
+    # - All other rpc() calls (get_profile, upsert_profile,
     #   increment_interaction, etc.) return execute().data = [_MOCK_PROFILE_ROW].
     # Tests that need to override the return data should set mock_sb.rpc.side_effect = None
     # and then assign mock_sb.rpc.return_value.execute.return_value.data directly.

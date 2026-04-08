@@ -57,7 +57,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { supabase } from '../lib/supabase'
 
 const content = ref('')
@@ -111,6 +111,11 @@ const emit = defineEmits(['post-created'])
   Submits the post with the selected tier visibility
   Clears the form and notifies the parent to refresh the feed
 */
+onMounted(async () => {
+  const { data : default_post_tier } = await supabase.rpc('get_default_post_tier')
+  selectedTier.value = default_post_tier || 'inner_circle'
+})
+
 async function handlePost() {
   if (!content.value.trim() && selectedFiles.value.length === 0) return
   
@@ -138,8 +143,8 @@ async function handlePost() {
     })
 
     const allPublicUrls = await Promise.all(uploadPromises)
-    // Call RPC to save post data (Make sure your SQL function accepts post_image_urls text[])
-    const { data, error: postError } = await supabase.rpc('post', {
+    // Call RPC to save post data (SQL function accepts post_image_urls text[])
+    const { data : post, error: postError } = await supabase.rpc('post', {
       post_content: content.value.trim(),
       post_tier: selectedTier.value, 
       post_image_urls: allPublicUrls
@@ -153,8 +158,11 @@ async function handlePost() {
     content.value = ''
     selectedFiles.value = []
     previewUrls.value = []
-    selectedTier.value = 'inner_circle'
-    emit('post-created', data[0])
+    const { data : default_post_tier } = await supabase.rpc('get_default_post_tier')
+    selectedTier.value = default_post_tier || 'inner_circle'
+    
+    // Emit event to parent to refresh feed
+    emit('post-created', post[0])
     
   } catch (err) {
     error.value = err.message || 'Failed to create post'

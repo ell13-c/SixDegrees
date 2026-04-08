@@ -14,7 +14,7 @@
       <div class="test-box add-friend-box">
         <h3 class="test-title">Add Friend</h3>
         <input 
-          v-model="testNickname" 
+          v-model="requestNickname" 
           placeholder="Enter an existing nickname" 
           class="test-input"
         />
@@ -132,17 +132,17 @@ onUnmounted(() => {
 /*
   Sends a friend request by nickname and alerts the user on success or failure
 */
-const testNickname = ref('')
+const requestNickname = ref('')
 
 const testAddFriend = async () => {
-  if (!testNickname.value) {
+  if (!requestNickname.value) {
     alert('Please enter a nickname')
     return
   }
   
   try {
     const { data, error } = await supabase.rpc('request_friend', {
-      friend_nickname: testNickname.value
+      friend_nickname: requestNickname.value
     })
     
     if (error) throw error
@@ -151,7 +151,7 @@ const testAddFriend = async () => {
       alert('Success! Your friend request has been sent!')
     else
       alert('Oops! Something went wrong! (Are you sure this person exists?)')
-    testNickname.value = '' // Clear the input field
+    requestNickname.value = '' // Clear the input field
     
   } catch (err) {
     console.error('Error adding friend:', err)
@@ -167,9 +167,9 @@ const incomingRequests = ref([]) // store like { id, nickname }
 */
 const fetchIncomingRequests = async () => {
   try {
-    const { data : requestNicks, error: incomingRequestError } = await supabase.rpc('friend_requests')
+    const { data : requestingNicks, error: incomingRequestError } = await supabase.rpc('friend_requests')
     if (incomingRequestError) throw incomingRequestError
-    incomingRequests.value = requestNicks
+    incomingRequests.value = requestingNicks
   } catch (err) {
     console.error('Error fetching nicknames:', err.message)
   }
@@ -244,9 +244,9 @@ const selectedTierFilter = ref(3)
 const currentUserId = ref(null)
 
 // Client-side filter — instant, no network round-trip
-// Own posts always show regardless of tier filter
+// Posts are still reloaded from network in the background when filter changes
 const posts = computed(() =>
-  allPosts.value.filter(p => p.tier <= selectedTierFilter.value || p.user_id === currentUserId.value)
+  allPosts.value.filter(p => p.friend_tier <= selectedTierFilter.value)
 )
 
 /*
@@ -256,7 +256,7 @@ async function loadPosts() {
   if (allPosts.value.length === 0) loading.value = true
 
   try {
-    const { data, error } = await supabase.rpc('load_posts', { max_tier: 3 })
+    const { data, error } = await supabase.rpc('load_posts')
     if (error) throw error
     allPosts.value = data || []
   } catch (err) {

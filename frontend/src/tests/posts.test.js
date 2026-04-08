@@ -3,6 +3,7 @@
 import { mount, flushPromises } from '@vue/test-utils'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import Post from '../components/Post.vue'
+import { tierIcon } from '../utils'
 
 // ─── 1. Hoist mocks ───────────────────────────────────────────────────────────
 const { mockRpc, mockGetUser, mockPush } = vi.hoisted(() => ({
@@ -27,6 +28,7 @@ vi.mock('vue-router', () => ({
 // ─── 4. Mock utils ────────────────────────────────────────────────────────────
 vi.mock('../utils.js', () => ({
   formatDate: vi.fn(() => 'Jan 1, 2025'),
+  tierIcon: vi.fn((tier) => {template: '<span />'}),
   tierLabel: vi.fn((tier) => `Tier ${tier}`),
 }))
 
@@ -34,9 +36,6 @@ vi.mock('../utils.js', () => ({
 vi.mock('lucide-vue-next', () => ({
   Heart: { template: '<span data-testid="icon-heart" />' },
   MessageCircle: { template: '<span data-testid="icon-message" />' },
-  Lock: { template: '<span />' },
-  Users: { template: '<span />' },
-  Globe: { template: '<span />' },
   Archive: { template: '<span />' },
   Trash2: { template: '<span data-testid="icon-trash" />' },
   Flag: { template: '<span data-testid="icon-flag" />' },
@@ -51,8 +50,6 @@ const makePost = (overrides = {}) => ({
   content: 'Hello world!',
   created_at: '2025-01-01T00:00:00Z',
   tier: 1,
-  like_count: 5,
-  comment_count: 2,
   ...overrides,
 })
 
@@ -60,11 +57,12 @@ const makePost = (overrides = {}) => ({
 const mountPost = (postOverrides = {}, userId = 'other-user') => {
   mockGetUser.mockResolvedValue({ data: { user: { id: userId } } })
   // Default RPC responses for onMounted calls:
-  // is_user_liked, is_user_reported, like_count
+  // is_user_liked, is_user_reported, like_count, comment_count
   mockRpc
     .mockResolvedValueOnce({ data: false, error: null }) // is_user_liked
     .mockResolvedValueOnce({ data: false, error: null }) // is_user_reported
     .mockResolvedValueOnce({ data: 5, error: null })     // like_count
+    .mockResolvedValueOnce({ data: 1, error: null })     // comment_count
 
   return mount(Post, {
     props: { post: makePost(postOverrides) },
@@ -121,18 +119,17 @@ describe('Post.vue', () => {
     })
 
     it('shows the like count', async () => {
-      const wrapper = mountPost({ like_count: 7 })
+      const wrapper = mountPost()
       await flushPromises()
-      // like_count RPC returns 5 on mount, overriding the prop
       const likeBtn = wrapper.find('.action-btn')
       expect(likeBtn.text()).toContain('5')
     })
 
     it('shows the comment count', async () => {
-      const wrapper = mountPost({ comment_count: 3 })
+      const wrapper = mountPost()
       await flushPromises()
       const buttons = wrapper.findAll('.action-btn')
-      expect(buttons[1].text()).toContain('3')
+      expect(buttons[1].text()).toContain('1')
     })
   })
 
@@ -254,6 +251,7 @@ describe('Post.vue', () => {
         .mockResolvedValueOnce({ data: true, error: null })  // is_user_liked → already liked
         .mockResolvedValueOnce({ data: false, error: null }) // is_user_reported
         .mockResolvedValueOnce({ data: 5, error: null })     // like_count
+        .mockResolvedValueOnce({ data: 0, error: null })     // comment_count
 
       const wrapper = mount(Post, { props: { post: makePost() } })
       await flushPromises()
@@ -336,6 +334,7 @@ describe('Post.vue', () => {
         .mockResolvedValueOnce({ data: false, error: null }) // is_user_liked
         .mockResolvedValueOnce({ data: false, error: null }) // is_user_reported
         .mockResolvedValueOnce({ data: 5, error: null })     // like_count
+        .mockResolvedValueOnce({ data: 0, error: null })     // comment_count
         .mockResolvedValueOnce({ data: [], error: null })    // load_comments
         .mockResolvedValueOnce({                             // comment RPC
           data: [{ id: 'c2', nickname: 'me', content: 'Great post!', user_id: 'other-user' }],
@@ -366,7 +365,7 @@ describe('Post.vue', () => {
         { id: 'c1', nickname: 'bob', content: 'Delete me!', user_id: 'user-bob' },
       ]
 
-      const wrapper = mountPost({ comment_count: 1 }, 'user-bob')
+      const wrapper = mountPost({}, 'user-bob')
       await flushPromises()
 
       mockRpc.mockResolvedValueOnce({ data: comments, error: null }) // load_comments

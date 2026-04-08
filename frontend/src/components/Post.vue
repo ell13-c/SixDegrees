@@ -116,9 +116,9 @@
 <script setup>
 import { ref, computed, onMounted} from 'vue'
 import { supabase } from '../lib/supabase'
-import { Heart, MessageCircle, Lock, Users, Globe, Archive, Trash2, Flag } from 'lucide-vue-next'
+import { Heart, MessageCircle, Archive, Trash2, Flag } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
-import { formatDate, tierLabel} from '../utils.js'
+import { formatDate, tierIcon, tierLabel } from '../utils.js'
 
 
 const router = useRouter()
@@ -148,8 +148,8 @@ const showComments = ref(false)
 const newComment = ref('')
 const comments = ref([])
 const isLiked = ref(false)
-const likeCount = ref(props.post.like_count || 0)
-const commentCount = ref(props.post.comment_count || 0)
+const likeCount = ref(0)
+const commentCount = ref(0)
 const isReported = ref(false)
 
 /**
@@ -159,19 +159,6 @@ const userInitial = computed(() => {
   const nickname = props.post.nickname || 'U'
   return nickname.charAt(0).toUpperCase()
 })
-
-/**
- * Returns the icon component for a given visibility tier (Lock, Users, or Globe)
- * @param tier tier value from db (1, 2, 3)
- */
-function tierIcon(tier) {
-  return {
-    1: Lock,
-    2: Users,
-    3: Globe
-  }[tier] || Lock
-}
-
 
 /**
  * Handles liking/unliking a post. 
@@ -225,12 +212,18 @@ onMounted(async () => {
   
   await fetchUserReport()
   
-  const { data, error } = await supabase.rpc('like_count', { 
+  const { data: likes, error : likeError } = await supabase.rpc('like_count', { 
     post_id: props.post.id 
   })
-  
-  if (!error && data !== null) {
-    likeCount.value = data
+  if (!likeError && likes !== null) {
+    likeCount.value = likes
+  }
+
+  const { data: comments, error : commentError } = await supabase.rpc('comment_count', {
+    post_id: props.post.id
+  })
+  if (!commentError && comments !== null) {
+    commentCount.value = comments
   }
 })
 

@@ -26,6 +26,7 @@
           Friends
         </button>
 
+        <!-- Friend Count and Button to Friend List -->
         <div v-if="!isOwnProfile" class="friendship-status">
           <div v-if="!isOwnProfile" class="friendship-status">
             <button class="addOrRemoveFriend-btn"
@@ -48,6 +49,7 @@
           </div>
         </div>
 
+        <!-- Block Button on Other User Profiles -->
         <div v-if="!isOwnProfile" class="block-status">
           <button class="blockOrUnblock-btn"
             type="button"
@@ -58,6 +60,21 @@
             <template v-else-if="isBlocked">Unblock</template>
             <template v-else>Block</template>
           </button>
+        </div>
+        <!-- View Profile Tier On Own Profile -->
+        <div v-else-if="!isEditing" class="tier-badge">
+          <span class="label">Visible To:</span>
+          <span :class="`tier-${profile.tier}`">
+            <component :is="tierIcon(profile.tier)" :size="12" /> {{ tierLabel(profile.tier) }}
+          </span>
+        </div>
+        <!-- Change Profile Tier Visibility in Edit Form -->
+        <div v-else class="tier-badge">
+          <select v-model.number="editForm.profile_tier">
+            <option v-for="tier in [1,2,3]" :key="tier" :value="tier">
+              {{ tierLabel(tier) }}
+            </option>
+          </select>
         </div>
       </div>
 
@@ -160,6 +177,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { supabase } from '../lib/supabase'
 import { UserPlus, UserMinus, Clock } from 'lucide-vue-next'
+import { tierIcon, tierLabel } from '../utils.js'
 
 const router = useRouter()
 const route = useRoute()
@@ -188,7 +206,8 @@ const editForm = ref({
   occupation: '',
   industry: '',
   interests: [],
-  languages: []
+  languages: [],
+  profile_tier: 1
 })
 
 const interestsInput = ref('')
@@ -295,7 +314,8 @@ function startEditing() {
     occupation: profile.value.occupation || '',
     industry: profile.value.industry || '',
     interests: profile.value.interests || [],
-    languages: profile.value.languages || []
+    languages: profile.value.languages || [],
+    profile_tier: profile.value.tier || 1
   }
   
   interestsInput.value = editForm.value.interests.join(', ')
@@ -341,6 +361,7 @@ async function saveProfile() {
         industry: editForm.value.industry,
         interests,
         languages,
+        profile_tier: editForm.value.profile_tier,
         avatar_url: profile.value.avatar_url || null
     })
     
@@ -937,5 +958,27 @@ li {
 .block-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+}
+
+.tier-badge {
+  display: flex;
+  gap: 1rem;
+}
+
+.tier-badge .label {
+  font-weight: bold;
+  color: #088F8F;
+}
+
+.tier-1 {
+  color: #6bb6ff;
+}
+
+.tier-2 {
+  color: #ffb66b;
+}
+
+.tier-3 {
+  color: #b6ff6b;
 }
 </style>
