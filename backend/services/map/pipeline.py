@@ -21,7 +21,7 @@ def run() -> PipelineResult:
         duration_ms = int((time.time() - start) * 1000)
         edge_count = sum(
             1 for r in data.interactions
-            if (r.get("like_count") or 0) + (r.get("comment_count") or 0) + (r.get("dm_count") or 0) > 0
+            if (r.get("likes_count") or 0) + (r.get("comments_count") or 0) + (r.get("dm_count") or 0) > 0
         )
         result = PipelineResult(
             user_ids=data.user_ids,

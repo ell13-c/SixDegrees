@@ -2,7 +2,7 @@ import numpy as np
 from models.user import UserProfile
 from config.settings import PROFILE_WEIGHTS
 import config.settings as _cfg
-from services.matching.embedder import embed_profiles, cosine_sim
+from services.matching.embedder import embed_profiles, cosine_sim, _FALLBACK_DIM
 from services.matching.similarity import (
     jaccard,
     tiered_location,
@@ -12,16 +12,7 @@ from services.matching.similarity import (
     INDUSTRY_CATEGORIES,
 )
 
-DEFAULT_WEIGHTS: dict[str, float] = {
-    "interests":  0.40,
-    "location":   0.20,
-    "languages":  0.15,
-    "education":  0.10,
-    "industry":   0.10,
-    "age":        0.05,
-}
-
-FEATURE_COLS = list(DEFAULT_WEIGHTS.keys())
+FEATURE_COLS = list(PROFILE_WEIGHTS.keys())
 
 
 def _build_embeddings(profiles: list[UserProfile]) -> dict[str, np.ndarray]:
@@ -86,7 +77,7 @@ def get_top_matches(
     if _cfg.EMBEDDING_FIELDS:
         embeddings = _build_embeddings(all_profiles)
     else:
-        embeddings = {p.id: np.zeros(384, dtype=np.float32) for p in all_profiles}
+        embeddings = {p.id: np.zeros(_FALLBACK_DIM, dtype=np.float32) for p in all_profiles}
 
     scored = [
         {"user": u, "similarity_score": round(_profile_similarity(current_user, u, embeddings), 4)}
@@ -108,7 +99,7 @@ def build_similarity_matrix(
         if _cfg.EMBEDDING_FIELDS:
             embeddings = _build_embeddings(users)
         else:
-            embeddings = {p.id: np.zeros(384, dtype=np.float32) for p in users}
+            embeddings = {p.id: np.zeros(_FALLBACK_DIM, dtype=np.float32) for p in users}
 
     n = len(users)
     f = len(FEATURE_COLS)
@@ -123,7 +114,7 @@ def build_similarity_matrix(
 
 def apply_weights(
     sim_matrix: np.ndarray,
-    weights: dict[str, float] = DEFAULT_WEIGHTS,
+    weights: dict[str, float] = PROFILE_WEIGHTS,
 ) -> np.ndarray:
     """Dot-multiply each feature dimension by its weight. Returns (N, N)."""
     weight_vec = np.array([weights[col] for col in FEATURE_COLS])

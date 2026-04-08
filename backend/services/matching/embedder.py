@@ -12,6 +12,10 @@ from models.user import UserProfile
 
 _model: SentenceTransformer | None = None
 
+# Fallback embedding dimension when the model isn't loaded yet.
+# Must match the output dim of EMBEDDING_MODEL (all-MiniLM-L6-v2 → 384).
+_FALLBACK_DIM = 384
+
 
 def _get_model() -> SentenceTransformer:
     """Return the shared model instance, loading it on first call."""
@@ -65,14 +69,11 @@ def cosine_sim(a: np.ndarray, b: np.ndarray) -> float:
 
 
 def embed_profiles(profiles: list[UserProfile]) -> np.ndarray:
-    """Batch-encode profiles using EMBEDDING_FIELDS text. Returns shape (N, 384).
+    """Batch-encode profiles using EMBEDDING_FIELDS text. Returns shape (N, dim).
 
-    Profiles with empty text receive np.zeros(384) directly — the model is NOT
-    called with empty strings (model output on empty tokens is undefined).
+    Profiles with empty text receive zero vectors — the model is NOT called
+    with empty strings (model output on empty tokens is undefined).
     Precondition: profile IDs in the input list must be unique.
-
-    Note: output dim is hardcoded to 384 for all-MiniLM-L6-v2. If EMBEDDING_MODEL
-    is changed to a different model, update this value accordingly.
     """
     n = len(profiles)
     texts = [build_profile_text(p) for p in profiles]
@@ -91,4 +92,4 @@ def embed_profiles(profiles: list[UserProfile]) -> np.ndarray:
     else:
         # All profiles have empty text — return zero vectors
         # Use 384 as default dim (all-MiniLM-L6-v2) since model isn't loaded yet
-        return np.zeros((n, 384), dtype=np.float32)
+        return np.zeros((n, _FALLBACK_DIM), dtype=np.float32)
