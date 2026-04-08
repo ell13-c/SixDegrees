@@ -11,7 +11,7 @@ vi.mock('../lib/supabase', () => ({
   supabase: {
     auth: {
       getUser: vi.fn().mockResolvedValue({ data: { user: { id: 'user-1' } } }),
-      getSession: vi.fn().mockResolvedValue({ data: { session: { access_token: 'tok' } } }),
+      getSession: vi.fn().mockResolvedValue({ data: { session: { user: { id: 'user-1' }, access_token: 'tok' } } }),
     },
   },
 }))
@@ -22,7 +22,7 @@ const MOCK_COORDS = [
   { user_id: 'you',   x: 0.0,  y: 0.0,  tier: 1, nickname: 'You',   display_name: 'You'   },
   { user_id: 'alice', x: 0.3,  y: 0.2,  tier: 1, nickname: 'Alice', display_name: 'Alice' },
   { user_id: 'bob',   x: -0.8, y: 0.6,  tier: 2, nickname: 'Bob',   display_name: 'Bob'   },
-  { user_id: 'carol', x: 0.1,  y: -0.9, tier: 3, nickname: 'Carol', display_name: 'Carol' },
+  { user_id: 'carol', x: 0.1,  y: -0.9, tier: 2, nickname: 'Carol', display_name: 'Carol' },
 ]
 
 describe('ClosenessMap', () => {
@@ -127,6 +127,7 @@ describe('PeopleMap API wiring', () => {
     const fetchMock = vi.fn()
       .mockResolvedValueOnce({ ok: false, status: 404, json: vi.fn() })
       .mockResolvedValueOnce({ ok: true, status: 200, json: vi.fn().mockResolvedValue(triggerPayload) })
+      .mockResolvedValueOnce({ ok: true, status: 200, json: vi.fn().mockResolvedValue(triggerPayload) })
     vi.stubGlobal('fetch', fetchMock)
 
     mount(PeopleMap)
@@ -140,8 +141,10 @@ describe('PeopleMap API wiring', () => {
     expect(fetchMock.mock.calls[1][0]).toContain('/map/trigger/user-1')
     expect(fetchMock.mock.calls[1][1]?.method).toBe('POST')
 
-    // Only 2 calls total — no redundant second GET
-    expect(fetchMock).toHaveBeenCalledTimes(2)
+    // Third call: GET /map/user-1 again — triggerAndReload calls fetchMap() after the POST
+    expect(fetchMock.mock.calls[2][0]).toContain('/map/user-1')
+    expect(fetchMock.mock.calls[2][1]?.method).toBeUndefined()
+    expect(fetchMock).toHaveBeenCalledTimes(3)
   })
 })
 describe('PeopleMap loading state', () => {

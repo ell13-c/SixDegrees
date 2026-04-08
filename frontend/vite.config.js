@@ -14,6 +14,12 @@ export default defineConfig({
     }
   },
   test: {
-    environment: 'jsdom'
+    environment: 'jsdom',
+    environmentOptions: {
+      jsdom: {
+        url: 'http://localhost',
+        storage: 'memoryStorage',
+      }
+    }
   }
 })
