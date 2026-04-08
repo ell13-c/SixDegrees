@@ -16,7 +16,7 @@ def build_ego_map(requester_id: str) -> EgoMapResponse:
 
     # Fetch only direct friends (max_tier=1) using the friendship graph.
     # extended_friends includes the requester themselves at depth 0.
-    friends_data = sb.rpc("extended_friends", {"max_tier": 1, "target_user_id": requester_id}).execute().data or []
+    friends_data = sb.rpc("extended_friends", {"max_tier": 3, "target_user_id": requester_id}).execute().data or []
     # Build {user_id: friendship_tier} — exclude the requester (depth 0)
     friend_tiers: dict[str, int] = {
         r["id"]: r["tier"]

@@ -17,7 +17,7 @@
         >{{ post.nickname || 'Unknown User' }}</div>
         <div class="post-meta">
           <span class="timestamp">{{ formatDate(post.created_at) }}</span>
-          <span class="tier-badge" :class="`tier-${post.tier}`">
+          <span v-if="!isOwnPost" class="tier-badge" :class="`tier-${post.tier}`">
             <component :is="tierIcon(post.tier)" :size="12" />
             {{ tierLabel(post.tier) }}
           </span>

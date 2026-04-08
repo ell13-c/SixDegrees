@@ -182,11 +182,11 @@ const TIER_COLORS = {
   4: '#f87171',
 }
 const TIER_LABELS = {
-  0: '✦ Inner Circle',
-  1: 'Tier 1',
-  2: 'Tier 2',
-  3: 'Tier 3',
-  4: 'Tier 4+',
+  0: '✦ You',
+  1: 'Inner Circle',
+  2: '2nd Degree',
+  3: '3rd Degree',
+  4: '4th+',
 }
 
 const router = useRouter()
@@ -305,30 +305,55 @@ function timeAgo(iso) {
 }
 function goToProfile(userId) { router.push(`/profile/${userId}`) }
 
+const MAP_CACHE_KEY = 'sixdeg_map_cache'
+
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(MAP_CACHE_KEY)
+    return raw ? JSON.parse(raw) : null
+  } catch { return null }
+}
+
+function saveCache(data) {
+  try { localStorage.setItem(MAP_CACHE_KEY, JSON.stringify(data)) } catch {}
+}
+
+function applyMapData(data) {
+  rawCoordinates.value = data.coordinates || []
+  computedAt.value = data.computed_at || null
+  closenessCoordinates.value = data.coordinates || []
+  closenessComputedAt.value = data.computed_at || null
+}
+
 /*
-  Fetches the precomputed map from the backend
-  If no map exists yet (404), triggers computation automatically
+  Fetches the precomputed map from the backend.
+  Shows cached data immediately; fetches fresh in the background.
+  If no map exists yet (404), triggers computation automatically.
 */
 async function fetchMap() {
-  loading.value = true
   error.value = null
+
+  // Render cached data immediately — no spinner if cache exists
+  const cached = loadCache()
+  if (cached) {
+    applyMapData(cached)
+    loading.value = false
+  }
+
   try {
-    const { data: { user } } = await supabase.auth.getUser()
     const { data: { session } } = await supabase.auth.getSession()
-    if (!user || !session) { error.value = 'Not logged in.'; return }
-    currentUserId.value = user.id
-    const res = await fetch(`${API_BASE}/map/${user.id}`, {
+    if (!session) { error.value = 'Not logged in.'; loading.value = false; return }
+    currentUserId.value = session.user.id
+    const res = await fetch(`${API_BASE}/map/${session.user.id}`, {
       headers: { Authorization: `Bearer ${session.access_token}` },
     })
     if (res.status === 404) { await triggerAndReload(); return }
     if (!res.ok) throw new Error(`Server error: ${res.status}`)
     const data = await res.json()
-    rawCoordinates.value = data.coordinates || []
-    computedAt.value = data.computed_at || null
-    closenessCoordinates.value = data.coordinates || []
-    closenessComputedAt.value = data.computed_at || null
+    applyMapData(data)
+    saveCache(data)
   } catch (e) {
-    error.value = e.message || 'Failed to load map.'
+    if (!cached) error.value = e.message || 'Failed to load map.'
   } finally {
     loading.value = false
   }
@@ -351,15 +376,12 @@ async function triggerAndReload() {
       headers: { Authorization: `Bearer ${session.access_token}` },
     })
     if (!res.ok) throw new Error(`Trigger failed: ${res.status}`)
-    const data = await res.json()
-    rawCoordinates.value = data.coordinates || []
-    computedAt.value = data.computed_at || null
   } catch (e) {
     error.value = e.message || 'Failed to compute map.'
   } finally {
     triggering.value = false
-    loading.value = false
   }
+  await fetchMap()
 }
 
 // Updates SVG dimensions to match container size, and sets the mobile warning flag

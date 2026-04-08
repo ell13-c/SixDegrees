@@ -20,12 +20,12 @@ export function formatDate(dateString) {
  * Returns display label for a post visibility tier
  */
 export function tierLabel(tier) {
-  return { 1: 'Inner Circle', 2: '2nd Degree', 3: 'All Friends' }[tier] ?? String(tier)
+  return { 1: 'Inner Circle', 2: '2nd Degree', 3: '3rd Degree' }[tier] ?? String(tier)
 }
 
 /**
  * Returns display label for the feed tier filter
  */
 export function tierFilterLabel(tier) {
-  return { 1: 'Inner Circle', 2: '+ 2nd Degree', 3: 'All Friends' }[tier]
+  return { 1: 'Inner Circle', 2: '+ 2nd Degree', 3: '+ 3rd Degree' }[tier]
 }
