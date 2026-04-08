@@ -11,13 +11,13 @@ const { mockRpc, mockGetUser, mockBack, mockPush } = vi.hoisted(() => ({
   mockPush: vi.fn(),
 }))
 
-// ✅ Declare as let so it can be fully reassigned in beforeEach and helpers
+// Declare as let so it can be fully reassigned in beforeEach and helpers
 let mockRouteParams = { params: {} }
 
 // ─── 2. Mock vue-router ───────────────────────────────────────────────────────
 vi.mock('vue-router', () => ({
   useRouter: vi.fn(() => ({ back: mockBack, push: mockPush })),
-  // ✅ Arrow function so each mount call reads the current mockRouteParams value
+  // Arrow function so each mount call reads the current mockRouteParams value
   useRoute: vi.fn(() => mockRouteParams),
 }))
 
@@ -48,14 +48,14 @@ const makeFriend = (overrides = {}) => ({
 
 // ─── 6. Mount helpers ─────────────────────────────────────────────────────────
 const mountOwnList = (friends = [makeFriend()]) => {
-  mockRouteParams = { params: {} } // ✅ reassign
+  mockRouteParams = { params: {} }  // ✅ simple reassignment, no "reassign" keyword
   mockGetUser.mockResolvedValue({ data: { user: { id: 'current-user' } } })
   mockRpc.mockResolvedValue({ data: friends, error: null })
   return mount(Friends)
 }
 
 const mountOtherList = async (friends = [makeFriend()], myFriends = [], pending = false) => {
-  mockRouteParams = { params: { userId: 'other-user' } } // ✅ reassign
+  mockRouteParams = { params: { userId: 'other-user' } } // reassign
   mockGetUser.mockResolvedValue({ data: { user: { id: 'current-user' } } })
 
   // Exact RPC call order from loadFriends():
@@ -78,7 +78,7 @@ const mountOtherList = async (friends = [makeFriend()], myFriends = [], pending 
 describe('Friends.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockRouteParams = { params: {} } // ✅ reset route before every test
+    mockRouteParams = { params: {} } // reset route before every test
     vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 

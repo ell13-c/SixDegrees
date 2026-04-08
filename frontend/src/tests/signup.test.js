@@ -48,7 +48,7 @@ describe('SignUp view', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.spyOn(console, 'error').mockImplementation(() => {})
-    // ✅ Return a proper object so destructuring never fails
+    // Return a proper object so destructuring never fails
     signUp.mockResolvedValue({ data: {}, error: null })
     rpc.mockResolvedValue({ data: true, error: null })
     window.alert = alertMock

@@ -26,7 +26,7 @@ vi.mock('../lib/supabase', () => ({
   },
 }))
 
-// ─── 3. Default setup ─────────────────────────────────────────────────────────
+// ─── 3. Default mount helper ──────────────────────────────────────────────────
 const mountCreatePost = () => {
   mockGetUser.mockResolvedValue({ data: { user: { id: 'user-1' } } })
   mockRpc.mockResolvedValue({
@@ -35,8 +35,23 @@ const mountCreatePost = () => {
   })
   mockUpload.mockResolvedValue({ error: null })
   mockGetPublicUrl.mockReturnValue({ data: { publicUrl: 'http://example.com/img.jpg' } })
-
   return mount(CreatePost)
+}
+
+// ─── 4. File selection helper ─────────────────────────────────────────────────
+const selectFiles = async (wrapper, files) => {
+  const input = wrapper.find('input[type="file"]')
+  Object.defineProperty(input.element, 'files', {
+    value: files,
+    configurable: true,
+  })
+  await input.trigger('change')
+}
+
+// ─── 5. Stub URL globally with both methods ───────────────────────────────────
+const stubURL = () => {
+  URL.createObjectURL = vi.fn(() => 'blob:mock-url')
+  URL.revokeObjectURL = vi.fn()
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -45,7 +60,11 @@ describe('CreatePost.vue', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.spyOn(console, 'error').mockImplementation(() => {})
-  })
+    vi.spyOn(console, 'log').mockImplementation(() => {})
+    // ✅ Reset URL stubs between tests
+    URL.createObjectURL = vi.fn()
+    URL.revokeObjectURL = vi.fn()
+    })
 
   // ── SECTION: Rendering ──────────────────────────────────────────────────────
 
@@ -89,7 +108,6 @@ describe('CreatePost.vue', () => {
   describe('Posting', () => {
     it('calls supabase.rpc("post") with content and selected tier', async () => {
       const wrapper = mountCreatePost()
-
       await wrapper.find('textarea').setValue('My new post')
       await wrapper.find('select').setValue('third_degree')
       await wrapper.find('button.post-btn').trigger('click')
@@ -104,17 +122,14 @@ describe('CreatePost.vue', () => {
 
     it('clears the textarea after a successful post', async () => {
       const wrapper = mountCreatePost()
-
       await wrapper.find('textarea').setValue('My new post')
       await wrapper.find('button.post-btn').trigger('click')
       await flushPromises()
-
       expect(wrapper.find('textarea').element.value).toBe('')
     })
 
     it('emits "post-created" after a successful post', async () => {
       const wrapper = mountCreatePost()
-
       await wrapper.find('textarea').setValue('My new post')
       await wrapper.find('button.post-btn').trigger('click')
       await flushPromises()
@@ -127,32 +142,27 @@ describe('CreatePost.vue', () => {
     })
 
     it('shows "Posting..." on the button while submitting', async () => {
-        // Block on getUser — it's the first async call in handlePost
-        let resolveGetUser
-        mockGetUser.mockReturnValue(
-            new Promise((res) => { resolveGetUser = res })
-        )
+      let resolveGetUser
+      mockGetUser.mockReturnValue(
+        new Promise((res) => { resolveGetUser = res })
+      )
 
-        const wrapper = mount(CreatePost)
-        await wrapper.find('textarea').setValue('My new post')
-        wrapper.find('button.post-btn').trigger('click') // don't await
+      const wrapper = mount(CreatePost)
+      await wrapper.find('textarea').setValue('My new post')
+      wrapper.find('button.post-btn').trigger('click')
 
-        // Button should show "Posting..." while getUser is pending
-        await vi.waitFor(() =>
-            expect(wrapper.find('button.post-btn').text()).toBe('Posting...')
-        )
+      await vi.waitFor(() =>
+        expect(wrapper.find('button.post-btn').text()).toBe('Posting...')
+      )
 
-        // Resolve and clean up
-        resolveGetUser({ data: { user: { id: 'user-1' } } })
-        mockRpc.mockResolvedValueOnce({ data: [{ id: 'post-1' }], error: null })
-        await flushPromises()
+      resolveGetUser({ data: { user: { id: 'user-1' } } })
+      mockRpc.mockResolvedValueOnce({ data: [{ id: 'post-1' }], error: null })
+      await flushPromises()
     })
 
     it('does not submit if content is only whitespace', async () => {
       const wrapper = mountCreatePost()
       await wrapper.find('textarea').setValue('   ')
-
-      // Button should still be disabled for whitespace-only content
       expect(wrapper.find('button.post-btn').attributes('disabled')).toBeDefined()
     })
 
@@ -196,7 +206,6 @@ describe('CreatePost.vue', () => {
 
     it('posts with the selected tier', async () => {
       const wrapper = mountCreatePost()
-
       await wrapper.find('textarea').setValue('Hello!')
       await wrapper.find('select').setValue('second_degree')
       await wrapper.find('button.post-btn').trigger('click')
@@ -211,23 +220,11 @@ describe('CreatePost.vue', () => {
   // ── SECTION: Image Handling ─────────────────────────────────────────────────
 
   describe('Image Handling', () => {
-    // Helper to simulate file selection
-    const selectFiles = async (wrapper, files) => {
-      const input = wrapper.find('input[type="file"]')
-      Object.defineProperty(input.element, 'files', {
-        value: files,
-        configurable: true,
-      })
-      await input.trigger('change')
-    }
-
     it('shows image preview after a file is selected', async () => {
       const wrapper = mountCreatePost()
+      stubURL() //  stub both createObjectURL and revokeObjectURL
+
       const file = new File(['img'], 'photo.jpg', { type: 'image/jpeg' })
-
-      // Mock URL.createObjectURL
-      vi.stubGlobal('URL', { createObjectURL: vi.fn(() => 'blob:mock-url') })
-
       await selectFiles(wrapper, [file])
 
       expect(wrapper.find('.image-previews').exists()).toBe(true)
@@ -236,25 +233,23 @@ describe('CreatePost.vue', () => {
 
     it('removes an image when the remove button is clicked', async () => {
       const wrapper = mountCreatePost()
+      stubURL() //  stub both — partner added revokeObjectURL to removeImage()
+
       const file = new File(['img'], 'photo.jpg', { type: 'image/jpeg' })
-
-      vi.stubGlobal('URL', { createObjectURL: vi.fn(() => 'blob:mock-url') })
       await selectFiles(wrapper, [file])
-
       expect(wrapper.find('.preview-item').exists()).toBe(true)
 
       await wrapper.find('.remove-btn').trigger('click')
-
       expect(wrapper.find('.preview-item').exists()).toBe(false)
     })
 
     it('shows an error if more than 5 images are added', async () => {
       const wrapper = mountCreatePost()
+      stubURL() //  stub both
+
       const files = Array.from({ length: 6 }, (_, i) =>
         new File(['img'], `photo${i}.jpg`, { type: 'image/jpeg' })
       )
-
-      vi.stubGlobal('URL', { createObjectURL: vi.fn(() => 'blob:mock-url') })
       await selectFiles(wrapper, files)
 
       expect(wrapper.find('.error').text()).toContain('Maximum 5 images allowed')
@@ -262,9 +257,8 @@ describe('CreatePost.vue', () => {
 
     it('disables the add photo button when 5 images are selected', async () => {
       const wrapper = mountCreatePost()
-      vi.stubGlobal('URL', { createObjectURL: vi.fn(() => 'blob:mock-url') })
+      stubURL() //  stub both
 
-      // Add 5 files one batch at a time
       const files = Array.from({ length: 5 }, (_, i) =>
         new File(['img'], `photo${i}.jpg`, { type: 'image/jpeg' })
       )
@@ -275,9 +269,9 @@ describe('CreatePost.vue', () => {
 
     it('uploads images to supabase storage and includes urls in the post', async () => {
       const wrapper = mountCreatePost()
-      const file = new File(['img'], 'photo.jpg', { type: 'image/jpeg' })
+      stubURL() //  stub both — form reset calls revokeObjectURL after successful post
 
-      vi.stubGlobal('URL', { createObjectURL: vi.fn(() => 'blob:mock-url') })
+      const file = new File(['img'], 'photo.jpg', { type: 'image/jpeg' })
       await selectFiles(wrapper, [file])
 
       await wrapper.find('textarea').setValue('Post with image')
@@ -288,6 +282,16 @@ describe('CreatePost.vue', () => {
       expect(mockRpc).toHaveBeenCalledWith('post', expect.objectContaining({
         post_image_urls: ['http://example.com/img.jpg'],
       }))
+    })
+
+    it('shows an error for unsupported file types', async () => {
+      const wrapper = mountCreatePost()
+      stubURL()
+
+      const file = new File(['doc'], 'document.pdf', { type: 'application/pdf' })
+      await selectFiles(wrapper, [file])
+
+      expect(wrapper.find('.error').text()).toContain('only JPEG, PNG, GIF, or WebP allowed')
     })
   })
 })
