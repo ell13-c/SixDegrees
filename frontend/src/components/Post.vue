@@ -4,7 +4,7 @@
       <div class="user-info">
         <div 
           class="avatar" 
-          @click="router.push(`/profile/${post.nickname}`)"
+          @click="router.push(`/profile/${post.user_id}`)"
           style="cursor:pointer"
         >
           <img v-if="post.avatar_url" :src="post.avatar_url" class="avatar-img" />
@@ -12,7 +12,7 @@
         </div>
         <div
           class="nickname"
-          @click="router.push(`/profile/${post.nickname}`)"
+          @click="router.push(`/profile/${post.user_id}`)"
           style="cursor:pointer"
         >{{ post.nickname || 'Unknown User' }}</div>
         <div class="post-meta">
@@ -165,9 +165,8 @@ const userInitial = computed(() => {
  * Checks if user is authenticated, then toggles like state in db and updates local state for instant UI feedback.
  */
 async function handleLike() {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return
-  
+  if (!currentUserId.value) return
+
   try {
     if (isLiked.value) {
       // Unlike
@@ -191,44 +190,32 @@ async function handleLike() {
   }
 }
 
-// Check if current user has liked the post
-async function fetchUserLike() {
-  const { data, error } = await supabase.rpc('is_user_liked', {
-    post_id: props.post.id
-  })
-
-  if (!error && data) {
-    isLiked.value = true
-  }
-}
-
 /*
-  * Loads in relevant post data:
+  * Loads in relevant post data in parallel:
   *  If the user has liked or reported the post, and total like and comment counts for the post
 */
 onMounted(async () => {
   const { data: { user } } = await supabase.auth.getUser()
-  if (user) { 
-    currentUserId.value = user.id 
-  }
-  
-  await fetchUserLike()
-  
-  await fetchUserReport()
-  
-  const { data: likes, error : likeError } = await supabase.rpc('like_count', { 
-    post_id: props.post.id 
-  })
-  if (!likeError && likes !== null) {
-    likeCount.value = likes
+  if (user) {
+    currentUserId.value = user.id
   }
 
-  const { data: comments, error : commentError } = await supabase.rpc('comment_count', {
-    post_id: props.post.id
-  })
-  if (!commentError && comments !== null) {
-    commentCount.value = comments
-  }
+  const [
+    { data: liked },
+    { data: reported },
+    { data: likes, error: likeError },
+    { data: commentsData, error: commentError },
+  ] = await Promise.all([
+    supabase.rpc('is_user_liked', { post_id: props.post.id }),
+    supabase.rpc('is_user_reported', { post_id: props.post.id }),
+    supabase.rpc('like_count', { post_id: props.post.id }),
+    supabase.rpc('comment_count', { post_id: props.post.id }),
+  ])
+
+  if (liked) isLiked.value = true
+  if (reported) isReported.value = true
+  if (!likeError && likes !== null) likeCount.value = likes
+  if (!commentError && commentsData !== null) commentCount.value = commentsData
 })
 
 /**
@@ -253,22 +240,19 @@ async function toggleComments() {
  * Inserts comment into db, adds comment to local arr, clears input field.
  */
 async function handleComment() {
-  if (!newComment.value.trim()) return
-  
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return
-  
+  if (!newComment.value.trim() || !currentUserId.value) return
+
   try {
-    const { data, error } = await supabase.rpc('comment', { 
-      post_id: props.post.id, 
-      comment_content: newComment.value.trim() 
+    const { data, error } = await supabase.rpc('comment', {
+      post_id: props.post.id,
+      comment_content: newComment.value.trim()
     })
-    
+
     if (error) throw error
 
     const newAddedComment = {
       ...data[0],
-      user_id: user.id 
+      user_id: currentUserId.value
     }
     
     comments.value.push(newAddedComment)
@@ -305,8 +289,7 @@ async function handleDeleteComment(commentId) {
  * Checks if user is authenticated, then toggles report state in db and updates local state for instant UI feedback.
  */
 async function handleReport() {
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return
+  if (!currentUserId.value) return
   
   try {
     if (isReported.value) {
@@ -329,16 +312,6 @@ async function handleReport() {
   }
 }
 
-// Checks if the current user has reported the post on mount
-async function fetchUserReport() {
-  const { data, error } = await supabase.rpc('is_user_reported', {
-    post_id: props.post.id
-  })
-
-  if (!error && data) {
-    isReported.value = true
-  }
-}
 
 </script>
 

@@ -32,9 +32,8 @@ PROFILE_WEIGHTS: dict[str, float] = {
 }
 
 INTERACTION_WEIGHTS: dict[str, float] = {
-    "likes_count":    0.3,
+    "likes_count":    0.5,
     "comments_count": 0.5,
-    "dm_count":       0.2,
 }
 
 # --- UMAP ---

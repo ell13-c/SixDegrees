@@ -147,9 +147,9 @@ class TestRunValidationFailure:
 class TestEdgeCountCalculation:
     def test_edge_count_counts_nonzero_pairs(self):
         interactions = [
-            {"likes_count": 2, "comments_count": 0, "dm_count": 0},   # has likes → count
-            {"likes_count": 0, "comments_count": 0, "dm_count": 0},   # all zeros → skip
-            {"likes_count": 0, "comments_count": 3, "dm_count": 0},   # has comments → count
+            {"likes_count": 2, "comments_count": 0},   # has likes → count
+            {"likes_count": 0, "comments_count": 0},   # all zeros → skip
+            {"likes_count": 0, "comments_count": 3},   # has comments → count
         ]
         mock_input = _make_pipeline_input(interactions=interactions)
 
@@ -167,9 +167,9 @@ class TestEdgeCountCalculation:
 
     def test_edge_count_in_record_run(self):
         interactions = [
-            {"likes_count": 1, "comments_count": 0, "dm_count": 0},
-            {"likes_count": 0, "comments_count": 0, "dm_count": 0},
-            {"likes_count": 0, "comments_count": 1, "dm_count": 0},
+            {"likes_count": 1, "comments_count": 0},
+            {"likes_count": 0, "comments_count": 0},
+            {"likes_count": 0, "comments_count": 1},
         ]
         mock_input = _make_pipeline_input(interactions=interactions)
 

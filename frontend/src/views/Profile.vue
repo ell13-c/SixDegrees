@@ -522,6 +522,13 @@ async function uploadAvatar(event) {
 onMounted(() => {
   loadProfile()
 })
+
+watch(() => route.params.userId, () => {
+  loaded.value = false
+  error.value = ''
+  profile.value = {}
+  loadProfile()
+})
 </script>
 
 <style scoped>

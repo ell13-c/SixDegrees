@@ -44,7 +44,6 @@ def build_combined_distance(data: PipelineInput) -> np.ndarray:
                 score = (
                     (row.get("likes_count") or 0) * INTERACTION_WEIGHTS["likes_count"]
                     + (row.get("comments_count") or 0) * INTERACTION_WEIGHTS["comments_count"]
-                    + (row.get("dm_count") or 0) * INTERACTION_WEIGHTS["dm_count"]
                 )
                 raw_scores[i][j] = score
                 raw_scores[j][i] = score
