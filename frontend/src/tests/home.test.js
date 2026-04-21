@@ -169,7 +169,7 @@ describe('Home.vue', () => {
     })
 
     it('renders Post stubs when posts are loaded', async () => {
-      const posts = [{ id: 1, content: 'Hello', friend_tier: 1, user_id: 'other' }, { id: 2, content: 'World', friend_tier: 1, user_id: 'other' }]
+      const posts = [{ id: 1, content: 'Hello', tier: 1, user_id: 'other' }, { id: 2, content: 'World', tier: 1, user_id: 'other' }]
       mockGetSession.mockResolvedValue({ data: { session: { user: { id: 'user-1' } } } })
       mockRpc
         .mockResolvedValueOnce({ data: [], error: null })    // friend_requests
@@ -557,7 +557,7 @@ describe('Home.vue', () => {
 
   describe('Delete Post', () => {
     const setupWithPosts = async () => {
-      const posts = [{ id: 1, content: 'Post One', friend_tier: 1, user_id: 'other' }, { id: 2, content: 'Post Two', friend_tier: 1, user_id: 'other' }]
+      const posts = [{ id: 1, content: 'Post One', tier: 1, user_id: 'other' }, { id: 2, content: 'Post Two', tier: 1, user_id: 'other' }]
       mockGetSession.mockResolvedValue({ data: { session: { user: { id: 'user-1' } } } })
       mockRpc
         .mockResolvedValueOnce({ data: [], error: null })    // friend_requests

@@ -246,7 +246,7 @@ const currentUserId = ref(null)
 // Client-side filter — instant, no network round-trip
 // Posts are still reloaded from network in the background when filter changes
 const posts = computed(() =>
-  allPosts.value.filter(p => p.friend_tier <= selectedTierFilter.value)
+  allPosts.value.filter(p => p.tier <= selectedTierFilter.value)
 )
 
 /*

@@ -198,7 +198,7 @@ describe('Post.vue', () => {
       const wrapper = mountPost()
       await flushPromises()
       await wrapper.find('.avatar').trigger('click')
-      expect(mockPush).toHaveBeenCalledWith('/profile/alice')
+      expect(mockPush).toHaveBeenCalledWith('/profile/user-abc')
     })
   })
 

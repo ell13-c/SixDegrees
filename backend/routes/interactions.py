@@ -20,7 +20,6 @@ class InteractionBody(BaseModel):
 _RESPONSE_LABELS: dict[str, str] = {
     "likes_count":    "likes",
     "comments_count": "comments",
-    "dm_count":       "dms",
 }
 
 
@@ -62,9 +61,3 @@ def record_comment(
     return _record_interaction(acting_user_id, body.target_user_id, "comments_count")
 
 
-@router.post("/dm")
-def record_dm(
-    body: InteractionBody,
-    acting_user_id: str = Depends(get_current_user),
-):
-    return _record_interaction(acting_user_id, body.target_user_id, "dm_count")

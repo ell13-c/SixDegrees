@@ -327,7 +327,7 @@ def seed_bots():
     interactions = []
     interactions_seen: set[tuple] = set()
 
-    def _add_interaction(a: str, b: str, lk: int, cm: int, dm: int):
+    def _add_interaction(a: str, b: str, lk: int, cm: int):
         uid_a, uid_b = (a, b) if a < b else (b, a)
         key = (uid_a, uid_b)
         if key not in interactions_seen:
@@ -337,18 +337,17 @@ def seed_bots():
                 "user_id_b": uid_b,
                 "likes_count": lk,
                 "comments_count": cm,
-                "dm_count": dm,
             })
 
     for i in range(5):
         t1 = tier1_ids[i]
-        _add_interaction(AAAA_ID, t1, 15, 10, 5)
+        _add_interaction(AAAA_ID, t1, 15, 10)
         for j in range(5):
             t2 = tier2_ids[i][j]
-            _add_interaction(t1, t2, 8, 5, 2)
+            _add_interaction(t1, t2, 8, 5)
             for k in range(5):
                 t3 = tier3_ids[i][j][k]
-                _add_interaction(t2, t3, 4, 2, 1)
+                _add_interaction(t2, t3, 4, 2)
 
     for i in range(0, len(interactions), CHUNK):
         sb.table("interactions").upsert(

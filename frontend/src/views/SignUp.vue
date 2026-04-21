@@ -100,16 +100,16 @@ const uniqueUser = ref(false)
 const showValidation = ref(false)
 const showChecklist = ref(false)
 
-// Validates nickname format: alphanumeric and underscores only, max 35 characters
+// Validates nickname format: alphanumeric and underscores only, max 14 characters
 const validName = computed(() => {
   const nick = nickname.value || ''
-  return /^[A-Za-z0-9_]{1,35}$/.test(nick)
+  return /^[A-Za-z0-9_]{1,14}$/.test(nick)
 })
 
 // Checks if typed nickname is available in the db and updates the validation indicator
 async function checkNickname() {
   try {
-    const { data, NicknameError } = await supabase.rpc('nickname_available', {
+    const { data, error: NicknameError } = await supabase.rpc('nickname_available', {
       nickname: nickname.value
     })
     if (NicknameError) { 
@@ -139,6 +139,11 @@ const validations = computed(() => {
 
 // Validates the password, then signs the user up with Supabase and redirects to the profile setup
 async function handleSignUp() {
+  if (!validName.value || !uniqueUser.value) {
+    error.value = 'Please enter a valid, available nickname.'
+    return
+  }
+
   if (!Object.values(validations.value).every(Boolean)) {
     error.value = 'Password does not meet the requirements.'
     return

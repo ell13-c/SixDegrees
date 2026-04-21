@@ -4,7 +4,7 @@ These tests document the API contract each endpoint must honor so future changes
 can be verified automatically. They run against a mocked Supabase client so no
 real database or network calls are made.
 
-Map route tests have been moved to tests/test_map_route.py.
+Map route tests have been moved to tests/routes/test_map_route.py.
 """
 from unittest.mock import MagicMock, patch
 
@@ -60,21 +60,6 @@ def test_interactions_comment_contract_calls_increment_rpc(client, mock_sb):
     assert increment_calls
     assert increment_calls[-1].args[1]["p_column"] == "comments_count"
 
-
-def test_interactions_dm_returns_dms_recorded(client):
-    """POST /interactions/dm returns 200 with {detail: 'dms recorded'} — not 'dm recorded'.
-
-    This test verifies the BEND-04 bug fix: response was 'dm recorded' (wrong),
-    must now be 'dms recorded' (correct). The fix was applied in Phase 7 via
-    _RESPONSE_LABELS dict in routes/interactions.py.
-    """
-    response = client.post("/interactions/dm", json={"target_user_id": "other-user-uuid"})
-    assert response.status_code == 200
-    data = response.json()
-    assert data.get("detail") == "dms recorded", (
-        f"Expected 'dms recorded' but got '{data.get('detail')}'. "
-        "BEND-04 fix may not be applied."
-    )
 
 
 def test_interactions_self_returns_400(client, mock_sb):

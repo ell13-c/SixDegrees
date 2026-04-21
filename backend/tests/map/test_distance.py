@@ -30,10 +30,10 @@ def make_profile(uid: str, **kwargs) -> UserProfile:
 
 
 def make_interaction(uid_a: str, uid_b: str, like_count: int = 0,
-                     comment_count: int = 0, dm_count: int = 0) -> dict:
+                     comment_count: int = 0) -> dict:
     """Return an interaction row with canonical ordering (uid_a < uid_b).
 
-    Column names match the DB schema: likes_count, comments_count, dm_count.
+    Column names match the DB schema: likes_count, comments_count.
     """
     a, b = min(uid_a, uid_b), max(uid_a, uid_b)
     return {
@@ -41,7 +41,6 @@ def make_interaction(uid_a: str, uid_b: str, like_count: int = 0,
         "user_id_b": b,
         "likes_count": like_count,
         "comments_count": comment_count,
-        "dm_count": dm_count,
     }
 
 
@@ -64,7 +63,7 @@ def test_matrix_is_symmetric():
     profiles = [make_profile(str(i)) for i in range(4)]
     interactions = [
         make_interaction("0", "1", like_count=3, comment_count=1),
-        make_interaction("2", "3", dm_count=5),
+        make_interaction("2", "3", comment_count=5),
     ]
     data = PipelineInput(profiles=profiles, interactions=interactions)
     m = build_combined_distance(data)
@@ -88,7 +87,7 @@ def test_diagonal_is_zero():
 
 def test_values_in_unit_range():
     profiles = [make_profile(str(i)) for i in range(5)]
-    interactions = [make_interaction("0", "2", like_count=10, comment_count=5, dm_count=3)]
+    interactions = [make_interaction("0", "2", like_count=10, comment_count=5)]
     data = PipelineInput(profiles=profiles, interactions=interactions)
     m = build_combined_distance(data)
     assert m.min() >= 0.0, f"Min value {m.min()} is below 0"
@@ -125,7 +124,7 @@ def test_interaction_drives_distance_down():
 
     # A & B interact heavily; A & C have no interaction
     interactions = [
-        make_interaction(uid_a, uid_b, like_count=50, comment_count=30, dm_count=20),
+        make_interaction(uid_a, uid_b, like_count=50, comment_count=30),
     ]
 
     data = PipelineInput(profiles=profiles, interactions=interactions)

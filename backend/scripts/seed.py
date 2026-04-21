@@ -124,7 +124,6 @@ def _build_interactions(profiles: list[dict]) -> list[dict]:
             "user_id_b": uid_b,
             "likes_count": 30,
             "comments_count": 20,
-            "dm_count": 10,
         })
 
     # ~50 sparse random interactions among other users (exclude Eleanor-Brita)
@@ -148,7 +147,6 @@ def _build_interactions(profiles: list[dict]) -> list[dict]:
             "user_id_b": key[1],
             "likes_count": rng.randint(0, 15),
             "comments_count": rng.randint(0, 10),
-            "dm_count": rng.randint(0, 5),
         })
 
     return interactions
