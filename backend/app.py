@@ -3,6 +3,7 @@
 # Multi-worker mode (--workers N) causes APScheduler to fire N times per trigger.
 # See backend/services/map/scheduler.py for full documentation.
 
+import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,11 +27,8 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 # ─── CORS  ───
-origins = [
-    "http://localhost:5173",   
-    "http://127.0.0.1:5173",   
-    "http://localhost:5174",   
-]
+_raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://127.0.0.1:5173,http://localhost:5174")
+origins = [o.strip() for o in _raw_origins.split(",") if o.strip()]
 
 app.add_middleware(
     CORSMiddleware,
