@@ -88,7 +88,12 @@ def _make_client_with_profiles(rows: list[dict]):
     mock_sb = MagicMock()
 
     profiles_tbl = MagicMock()
-    profiles_tbl.select.return_value.execute.return_value.data = rows
+    # Handle .select(...).limit(...).execute() chain
+    select_result = MagicMock()
+    select_result.limit.return_value.execute.return_value.data = rows
+    # Also support .select(...).execute() without limit (for backward compatibility)
+    select_result.execute.return_value.data = rows
+    profiles_tbl.select.return_value = select_result
 
     def _table_side_effect(table_name):
         if table_name == "profiles":
