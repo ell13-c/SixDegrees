@@ -27,8 +27,6 @@
         </button>
 
         <div v-if="!isOwnProfile" class="friendship-status">
-        <!-- Friend Count and Button to Friend List -->
-          <div v-if="!isOwnProfile" class="friendship-status">
             <button class="addOrRemoveFriend-btn"
               type="button"
               :class="isFriend ? 'remove-friend-btn' : requestSent ? 'pending-friend-btn' : 'add-friend-btn'"
@@ -47,7 +45,6 @@
               Cancel
             </button>
           </div>
-        </div>
 
 
         <div v-if="!isOwnProfile" class="block-status">
@@ -265,7 +262,8 @@ async function loadProfile() {
     //if userid in route, load that profile, otherwise load current user's profile
     const targetUser = route.params.userId || user.id
 
-    const { data, error: profileError } = (targetUser.length == 36) ? 
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+    const { data, error: profileError } = UUID_RE.test(targetUser) ?
       await supabase
         .rpc('get_user_profile', { target_user_id: targetUser })
         .single()
@@ -901,7 +899,7 @@ li {
 }
 
 .pending-friend-btn {
-  width: 250%;
+  width: 100%;
   padding: 0.75rem;
   background: transparent;
   color: #f0a500;
