@@ -55,3 +55,9 @@ docs/
 # Playwright
 test-results/
 playwright-report/
+
+# Demo generated output
+demo/data/
+
+# Hypothesis test cache
+.hypothesis/
