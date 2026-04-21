@@ -39,7 +39,7 @@ const routes = [
     path: '/map',
     name: 'PeopleMap',
     component: PeopleMap,
-    //meta: { requiresAuth: true }
+    meta: { requiresAuth: true }
   },
   {
     path: '/friends/:userId?',
