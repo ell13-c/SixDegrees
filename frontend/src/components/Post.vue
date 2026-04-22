@@ -4,7 +4,7 @@
       <div class="user-info">
         <div 
           class="avatar" 
-          @click="router.push(`/profile/${post.user_id}`)"
+          @click="router.push(`/profile/${post.nickname}`)"
           style="cursor:pointer"
         >
           <img v-if="post.avatar_url" :src="post.avatar_url" class="avatar-img" />
@@ -12,7 +12,7 @@
         </div>
         <div
           class="nickname"
-          @click="router.push(`/profile/${post.user_id}`)"
+          @click="router.push(`/profile/${post.nickname}`)"
           style="cursor:pointer"
         >{{ post.nickname || 'Unknown User' }}</div>
         <div class="post-meta">
@@ -42,7 +42,7 @@
     </div>
     
     <div class="post-actions-wrapper">
-      <div class="post-actions">
+      <div v-if="!props.admin" class="post-actions">
         <button 
           @click="handleLike" 
           :class="{ liked: isLiked }"
@@ -59,7 +59,7 @@
       </div>
 
       <button 
-        v-if="isOwnPost" 
+        v-if="isOwnPost || props.admin" 
         class="delete-icon-btn" 
         @click="emitDelete"
         title="Delete Post"
@@ -68,11 +68,13 @@
       </button>
     
       <button 
-        v-else-if="!isReported"
+        v-if="!isOwnPost"
         @click="handleReport" 
         class="action-btn"
+        title="Report/Unreport Post"
       >
-        <Flag :size="18"/>
+        <Flag :size="18" :fill="isReported ? 'currentColor' : 'none'" v-if="!props.admin"/>
+        <CheckCircle :size="18" :fill="isReported ? 'currentColor' : 'none'" v-else/>
       </button>
     </div>
     
@@ -116,13 +118,13 @@
 <script setup>
 import { ref, computed, onMounted} from 'vue'
 import { supabase } from '../lib/supabase'
-import { Heart, MessageCircle, Archive, Trash2, Flag } from 'lucide-vue-next'
+import { Heart, MessageCircle, Archive, Trash2, Flag, CheckCircle } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { formatDate, tierIcon, tierLabel } from '../utils.js'
 
 
 const router = useRouter()
-const emit = defineEmits(['delete-post'])
+const emit = defineEmits(['delete-post','check-report'])
 const currentUserId = ref(null)
 
 
@@ -141,6 +143,10 @@ const props = defineProps({
   post: {
     type: Object,
     required: true
+  },
+  admin: {
+    type: Boolean,
+    required: false
   }
 })
 
@@ -304,6 +310,7 @@ async function handleReport() {
       
       isReported.value = true
     }
+    emit('check-report',props.post.id)
   } catch (err) {
   }
 }
