@@ -82,7 +82,6 @@ const handleLogin = async () => {
     const { data: onboarded, error: profileError } = await supabase.rpc('is_onboarded');
 
     if (profileError) {
-      console.error(profileError.message);
       error.value = "Cannot load profile.";
       return;
     }
@@ -95,7 +94,6 @@ const handleLogin = async () => {
 
   } catch (err) {
     error.value = "Login failed.";
-    console.error(err);
   }
 };
 </script>

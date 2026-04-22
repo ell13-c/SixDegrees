@@ -170,7 +170,6 @@ async function handlePost() {
     
   } catch (err) {
     error.value = err.message || 'Failed to create post'
-    console.error('Post error:', err)
   } finally {
     posting.value = false
   }

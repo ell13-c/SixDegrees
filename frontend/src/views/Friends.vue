@@ -104,7 +104,6 @@ async function loadFriends() {
       }))
     }
   } catch (err) {
-    console.error('Error loading friends:', err)
   } finally {
     loading.value = false
   }
@@ -123,7 +122,6 @@ async function sendFriendRequest(friend) {
     if (data) friendStatuses.value[friend.id].requestSent = true
     else alert('Could not send request.')
   } catch (err) {
-    console.error('Error sending friend request:', err)
   } finally {
     requesting.value = null
   }
@@ -148,7 +146,6 @@ async function removeFriend(friend) {
       friendStatuses.value[friend.id].isFriend = false
     }
   } catch (err) {
-    console.error('Error removing friend:', err)
   } finally {
     requesting.value = null
   }

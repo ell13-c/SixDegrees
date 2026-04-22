@@ -154,7 +154,6 @@ const testAddFriend = async () => {
     requestNickname.value = '' // Clear the input field
     
   } catch (err) {
-    console.error('Error adding friend:', err)
     alert('Error: ' + err.message)
   }
 }
@@ -171,7 +170,6 @@ const fetchIncomingRequests = async () => {
     if (incomingRequestError) throw incomingRequestError
     incomingRequests.value = requestingNicks
   } catch (err) {
-    console.error('Error fetching nicknames:', err.message)
   }
 }
 
@@ -260,7 +258,6 @@ async function loadPosts() {
     if (error) throw error
     allPosts.value = data || []
   } catch (err) {
-    console.error('Error loading posts:', err)
   } finally {
     loading.value = false
   }
@@ -314,7 +311,6 @@ async function handleDeletePost(postId) {
     }
 
   } catch (err) {
-    console.error('Error deleting post:', err)
     alert('Failed to delete post: ' + err.message)
   }
 }

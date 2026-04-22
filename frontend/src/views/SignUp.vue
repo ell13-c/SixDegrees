@@ -121,7 +121,6 @@ async function checkNickname() {
     if (showValidation.value != uniqueUser.value)
       showValidation.value = true;
   } catch (err) {
-    console.error(err);
   }
 }
 

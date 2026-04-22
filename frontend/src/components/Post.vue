@@ -186,7 +186,6 @@ async function handleLike() {
       likeCount.value++
     }
   } catch (err) {
-    console.error('Like error:', err)
   }
 }
 
@@ -259,7 +258,6 @@ async function handleComment() {
     commentCount.value++
     newComment.value = ''
   } catch (err) {
-    console.error('Comment error:', err)
   }
 }
 
@@ -280,7 +278,6 @@ async function handleDeleteComment(commentId) {
       }
     }
   } catch (err) {
-    console.error('Delete comment error:', err)
   }
 }
 
@@ -308,7 +305,6 @@ async function handleReport() {
       isReported.value = true
     }
   } catch (err) {
-    console.error('Report error:', err)
   }
 }
 

@@ -160,7 +160,6 @@ const handleSubmit = async () => {
 
   } catch (err) {
     error.value = err.message;
-    console.error(err);
   }
 };
 

@@ -296,7 +296,6 @@ async function loadProfile() {
     else
       router.replace(`/profile`)
   } catch (err) {
-    console.error('Error loading profile:', err)
     error.value = 'Failed to load profile'
   }
 }
@@ -371,7 +370,6 @@ async function saveProfile() {
     isEditing.value = false
   } catch (err) {
     error.value = err.message || 'Failed to save profile'
-    console.error('Save error:', err)
   } finally {
     saving.value = false
   }
@@ -392,7 +390,6 @@ async function sendFriendRequest() {
     if (data) requestSent.value = true
     else alert('Could not send request — you may already be friends or have a pending request.')
   } catch (err) {
-    console.error('Error sending friend request:', err)
   } finally {
     requesting.value = false
   }
@@ -408,7 +405,6 @@ async function removeFriend() {
     if (error) throw error
     isFriend.value = false
   } catch (err) {
-    console.error('Error removing friend:', err)
   } finally {
     requesting.value = false
   }
@@ -424,7 +420,6 @@ async function rescindRequest() {
     if (error) throw error
     requestSent.value = false
   } catch (err) {
-    console.error('Error rescinding request:', err)
   } finally {
     requesting.value = false
   }
@@ -440,7 +435,6 @@ async function blockUser() {
     if (error) throw error
     isBlocked.value = true
   } catch (err) {
-    console.error('Error blocking user:', err)
   } finally {
     blocking.value = false
   }
@@ -456,7 +450,6 @@ async function unblockUser() {
     if (error) throw error
     isBlocked.value = false
   } catch (err) {
-    console.error('Error unblocking user:', err)
   } finally {
     blocking.value = false
   }
@@ -510,7 +503,6 @@ async function uploadAvatar(event) {
 
     profile.value.avatar_url = publicUrl
   } catch (err) {
-    console.error('Avatar upload failed:', err)
     alert(err.message || 'Upload failed')
   } finally {
     uploading.value = false
