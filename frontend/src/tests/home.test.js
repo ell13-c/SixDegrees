@@ -169,7 +169,7 @@ describe('Home.vue', () => {
     })
 
     it('renders Post stubs when posts are loaded', async () => {
-      const posts = [{ id: 1, content: 'Hello', tier: 1, user_id: 'other' }, { id: 2, content: 'World', tier: 1, user_id: 'other' }]
+      const posts = [{ id: 1, content: 'Hello', friend_tier: 1, tier: 1, user_id: 'other' }, { id: 2, content: 'World', friend_tier: 1, tier: 2, user_id: 'other' }]
       mockGetSession.mockResolvedValue({ data: { session: { user: { id: 'user-1' } } } })
       mockRpc
         .mockResolvedValueOnce({ data: [], error: null })    // is_admin
@@ -504,6 +504,12 @@ describe('Home.vue', () => {
       expect(btns[0].classes()).not.toContain('active')
       expect(btns[1].classes()).not.toContain('active')
     })
+    
+    it('does not show the secondary tier filter by default', async () => {
+      const wrapper = mountHome()
+      await flushPromises()
+      expect(wrapper.find('.tier-secondary').exists()).toBe(false)
+    })
 
     it('changes the active tier when a filter button is clicked', async () => {
       const wrapper = mountHome()
@@ -512,6 +518,14 @@ describe('Home.vue', () => {
       await btns[0].trigger('click')
       expect(btns[0].classes()).toContain('active')
       expect(btns[2].classes()).not.toContain('active')
+    })
+
+    it('shows secondary tier filter button if primary selected filter is less than 3', async () => {
+      const wrapper = mountHome()
+      await flushPromises()
+      const btns = wrapper.findAll('.filter-btn')
+      await btns[0].trigger('click')
+      expect(wrapper.find('.tier-secondary').exists()).toBe(true)
     })
 
     it('calls load_posts when filter changes', async () => {
@@ -570,7 +584,7 @@ describe('Home.vue', () => {
 
   describe('Delete Post', () => {
     const setupWithPosts = async () => {
-      const posts = [{ id: 1, content: 'Post One', tier: 1, user_id: 'other' }, { id: 2, content: 'Post Two', tier: 1, user_id: 'other' }]
+      const posts = [{ id: 1, content: 'Post One', friend_tier: 1, tier: 1, user_id: 'other' }, { id: 2, content: 'Post Two', friend_tier: 1, tier: 2, user_id: 'other' }]
       mockGetSession.mockResolvedValue({ data: { session: { user: { id: 'user-1' } } } })
       mockRpc
         .mockResolvedValueOnce({ data: false, error: null }) // is_admin

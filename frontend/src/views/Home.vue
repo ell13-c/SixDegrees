@@ -59,18 +59,29 @@
         </button>
       </div>
 
-      <!-- Tier Filter: controls which posts are shown based on friend proximity -->
+      <!-- Tier Filters: control which posts are shown based on friend proximity and post tier -->
       <div class="tier-filter">
-        <span class="filter-label">Showing:</span>
+        <span class="filter-label">Showing Posts From:</span>
         <button 
           v-for="tier in [1, 2, 3]" 
           :key="tier" 
-          @click="selectedTierFilter = tier; loadPosts()" 
-          :class="['filter-btn', { active: selectedTierFilter === tier }]"
+          @click="selectedFriendTierFilter = tier; selectedPostTierFilter=Math.max(selectedPostTierFilter,selectedFriendTierFilter); loadPosts()" 
+          :class="['filter-btn', { active: selectedFriendTierFilter === tier }]"
         >
           {{ tierFilterLabel(tier) }}
         </button>
-      </div>
+        <div class="tier-secondary" v-if="selectedFriendTierFilter < 3">
+          <span class="filter-label">To:</span>
+          <button 
+            v-for="tier in Array.from({ length: 3 - selectedFriendTierFilter+1}, (_, i) => selectedFriendTierFilter+i)" 
+            :key="tier" 
+            @click="selectedPostTierFilter = tier; loadPosts()" 
+            :class="['filter-btn', { active: selectedPostTierFilter === tier }]"
+          >
+            {{ tierFilterLabel(tier) }}
+          </button>
+        </div>
+      </div>     
 
       <CreatePost @post-created="loadPosts" />
 
@@ -243,13 +254,14 @@ onUnmounted(() => {
   clearInterval(pollInterval.value)
 })
 
-const selectedTierFilter = ref(3)
+const selectedFriendTierFilter = ref(3)
+const selectedPostTierFilter = ref(3)
 const currentUserId = ref(null)
 
 // Client-side filter — instant, no network round-trip
 // Posts are still reloaded from network in the background when filter changes
 const posts = computed(() =>
-  allPosts.value.filter(p => p.user_id === currentUserId.value || p.tier <= selectedTierFilter.value)
+  allPosts.value.filter(p => p.friend_tier <= selectedFriendTierFilter.value && p.tier <= selectedPostTierFilter.value)
 )
 
 /*
@@ -532,6 +544,15 @@ async function handleDeletePost(postId) {
   height: 100%;
   object-fit: cover;
   border-radius: 50%;
+}
+
+.tier-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-left: 6.18rem;
+  filter:hue-rotate(-45deg);
 }
 
 .tier-filter {
