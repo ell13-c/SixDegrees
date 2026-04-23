@@ -174,7 +174,7 @@ The app is deployed as two separate services:
 |-------|---------|-----|
 | Frontend (Vue 3) | Vercel | https://six-degrees-nine.vercel.app |
 | Backend (FastAPI) | Render (free tier) | https://sixdegrees-7ffq.onrender.com |
-| Database + Auth | Supabase (hosted) | — |
+| Database + Auth | Supabase (hosted) | N/A |
 
 ### Cost & Performance Notes
 
