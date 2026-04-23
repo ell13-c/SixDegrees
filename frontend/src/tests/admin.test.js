@@ -111,7 +111,9 @@ describe('Admin.vue', () => {
       // Use a promise we control so loading stays true during the check
       let resolveRpc
       mockGetSession.mockResolvedValue({ data: { session: { user: { id: 'user-1' } } } })
-      mockRpc.mockReturnValue(new Promise((res) => { resolveRpc = res }))
+      mockRpc
+        .mockResolvedValueOnce({ data: true, error: null })    // is_admin
+        .mockReturnValue(new Promise((res) => { resolveRpc = res })) // load_reported_post promise
 
       const wrapper = mount(Admin, {
         global: { stubs: { Post: PostStub } },

@@ -36,10 +36,10 @@ vi.mock('../utils.js', () => ({
 vi.mock('lucide-vue-next', () => ({
   Heart: { template: '<span data-testid="icon-heart" />' },
   MessageCircle: { template: '<span data-testid="icon-message" />' },
-  Archive: { template: '<span />' },
   Trash2: { template: '<span data-testid="icon-trash" />' },
   Flag: { template: '<span data-testid="icon-flag" />' },
   CheckCircle: { template: '<span data-testid="icon-check" />' },
+  UserRound: { template: '<span data-testid="icon-user" />' },
 }))
 
 // ─── 6. Default test post ─────────────────────────────────────────────────────
@@ -395,8 +395,19 @@ describe('Post.vue', () => {
       mockRpc.mockResolvedValueOnce({ data: null, error: null })
       expect(wrapper.find('[data-testid="icon-flag"]').attributes('fill')).toBe('none')
     })
+    
+    it('does nothing if the user cancels the confirm dialog', async () => {
+      vi.spyOn(window, 'confirm').mockReturnValue(false)
+      const wrapper = mountPost({}, 'other-user')
+      await flushPromises()
 
-    it('calls report_post RPC when flag button is clicked', async () => {
+      mockRpc.mockResolvedValueOnce({ data: null, error: null })
+
+      expect(mockRpc).not.toHaveBeenCalledWith('report_post', expect.anything())
+    })
+
+    it('calls report_post RPC when user confirms report', async () => {
+      vi.spyOn(window, 'confirm').mockReturnValue(true)
       const wrapper = mountPost({}, 'other-user')
       await flushPromises()
 
@@ -408,6 +419,7 @@ describe('Post.vue', () => {
     })
 
     it('emits check-report with the post id when report button is clicked', async () => {
+      vi.spyOn(window, 'confirm').mockReturnValue(true)
       const wrapper = mountPost({}, 'other-user')
       await flushPromises()
 
@@ -420,6 +432,7 @@ describe('Post.vue', () => {
     })
     
     it('fills the report button after reporting', async () => {
+      vi.spyOn(window, 'confirm').mockReturnValue(true)
       const wrapper = mountPost({}, 'other-user')
       await flushPromises()
 

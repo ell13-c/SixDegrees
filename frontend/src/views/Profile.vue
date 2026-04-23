@@ -213,7 +213,7 @@ const languagesInput = ref('')
 
 // check if user is viewing their own profile or someone else's
 const isOwnProfile = computed(() => {
-  return !route.params.nickname
+  return !route.params.nickname || profile.value.id === currentUserId.value
 })
 
 // First letter of the user's nickname, used as avatar fallback

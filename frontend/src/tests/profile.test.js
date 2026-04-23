@@ -26,13 +26,13 @@ vi.mock('../lib/supabase', () => {
     rpc: vi.fn()
   }
 
-  supabase.rpc.mockImplementation((fnName) => {
+  supabase.rpc.mockImplementation((fnName, {target_nickname: nickname}) => {
     if (fnName === 'get_user_profile') {
       return {
         single: () => Promise.resolve({
           data: {
-            id: 'user-1',
-            nickname: 'Alice',
+            id: (nickname == 'other-user-999' ? 'user-2' : 'user-1'),
+            nickname: (nickname=='user-1'? 'Alice' : nickname),
             bio: 'Hello CWRU',
             age: 25,
             city: 'Cleveland',
@@ -65,7 +65,7 @@ import Profile from '../views/Profile.vue'
 
 // 4. Simple helpers (no `useRoute`).
 function mountOwnProfile() {
-  routeParams.userId = undefined
+  routeParams.nickname = undefined
   return mount(Profile, {
     global: {
       stubs: { RouterLink: true },
@@ -74,7 +74,7 @@ function mountOwnProfile() {
 }
 
 function mountOtherProfile() {
-  routeParams.userId = 'other-user-999'
+  routeParams.nickname = 'other-user-999'
   return mount(Profile, {
     global: {
       stubs: { RouterLink: true },
