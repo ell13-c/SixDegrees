@@ -170,11 +170,7 @@ Two data paths:
 
 The app is deployed as two separate services:
 
-| Layer | Service | URL |
-|-------|---------|-----|
-| Frontend (Vue 3) | Vercel | https://six-degrees-nine.vercel.app |
-| Backend (FastAPI) | Render (free tier) | https://sixdegrees-7ffq.onrender.com |
-| Database + Auth | Supabase (hosted) | N/A |
+**Live app:** https://six-degrees-nine.vercel.app
 
 ### Cost & Performance Notes
 
