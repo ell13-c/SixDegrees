@@ -21,11 +21,12 @@
             @click="activeView = 'closeness'"
           >Closeness</button>
         </div>
-        <button class="refresh-btn" @click="triggerAndReload" :disabled="loading || triggering">
+        <!-- Refresh disabled on free tier — map recomputes automatically at UTC 00:00 -->
+        <!-- <button class="refresh-btn" @click="triggerAndReload" :disabled="loading || triggering">
           <span v-if="triggering" class="spinner" />
           <span v-else>↻</span>
           {{ triggering ? 'Computing…' : 'Refresh Map' }}
-        </button>
+        </button> -->
       </div>
     </div>
 
