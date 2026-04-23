@@ -126,15 +126,18 @@ describe('Home.vue', () => {
       expect(wrapper.find('button.box-btn').text()).toBe('Send Friend Request')
     })
 
-    it('renders tier filter buttons for tiers 1, 2, and 3', async () => {
+    it('renders tier filter buttons twice for tiers 1, 2, and 3', async () => {
       const wrapper = mountHome()
       await flushPromises()
       const filterBtns = wrapper.findAll('.filter-btn')
-      expect(filterBtns).toHaveLength(3)
+      expect(filterBtns).toHaveLength(6)
       // These come from the mocked tierFilterLabel
       expect(filterBtns[0].text()).toBe('Tier 1 Label')
       expect(filterBtns[1].text()).toBe('Tier 2 Label')
       expect(filterBtns[2].text()).toBe('Tier 3 Label')
+      expect(filterBtns[3].text()).toBe('Tier 1 Label')
+      expect(filterBtns[4].text()).toBe('Tier 2 Label')
+      expect(filterBtns[5].text()).toBe('Tier 3 Label')
     })
 
     it('renders the CreatePost stub component', async () => {
@@ -505,10 +508,13 @@ describe('Home.vue', () => {
       expect(btns[1].classes()).not.toContain('active')
     })
     
-    it('does not show the secondary tier filter by default', async () => {
+    it('first two buttons for secondary filter disabled by default', async () => {
       const wrapper = mountHome()
       await flushPromises()
-      expect(wrapper.find('.tier-secondary').exists()).toBe(false)
+      const btns = wrapper.find('.tier-secondary').findAll('.filter-btn')
+      expect(btns[2].classes()).toContain('active')
+      expect(btns[0].classes()).not.toContain('disabled')
+      expect(btns[1].classes()).not.toContain('disabled')
     })
 
     it('changes the active tier when a filter button is clicked', async () => {

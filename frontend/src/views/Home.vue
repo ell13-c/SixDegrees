@@ -61,7 +61,7 @@
 
       <!-- Tier Filters: control which posts are shown based on friend proximity and post tier -->
       <div class="tier-filter">
-        <span class="filter-label">Showing Posts From:</span>
+        <span class="filter-label">Showing Posts From Your:</span>
         <button 
           v-for="tier in [1, 2, 3]" 
           :key="tier" 
@@ -70,13 +70,14 @@
         >
           {{ tierFilterLabel(tier) }}
         </button>
-        <div class="tier-secondary" v-if="selectedFriendTierFilter < 3">
-          <span class="filter-label">To:</span>
+        <div class="tier-secondary">
+          <span class="filter-label">To Their:</span>
           <button 
-            v-for="tier in Array.from({ length: 3 - selectedFriendTierFilter+1}, (_, i) => selectedFriendTierFilter+i)" 
+            v-for="tier in [1, 2, 3]" 
             :key="tier" 
-            @click="selectedPostTierFilter = tier; loadPosts()" 
-            :class="['filter-btn', { active: selectedPostTierFilter === tier }]"
+            @click="selectedPostTierFilter = tier; loadPosts()"
+            :class="['filter-btn', { active: selectedPostTierFilter === tier}]"
+            :disabled="tier < selectedFriendTierFilter"
           >
             {{ tierFilterLabel(tier) }}
           </button>
@@ -546,21 +547,22 @@ async function handleDeletePost(postId) {
   border-radius: 50%;
 }
 
-.tier-secondary {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-  margin-left: 6.18rem;
-  filter:hue-rotate(-45deg);
-}
-
 .tier-filter {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 1.5rem;
   flex-wrap: wrap;
+}
+
+.tier-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-left: 6.45rem;
+  filter:hue-rotate(-45deg);
+  transform: scale(75%);
 }
 
 .filter-label {
@@ -589,5 +591,12 @@ async function handleDeletePost(postId) {
   background: #088F8F;
   border-color: #088F8F;
   color: white;
+}
+
+.filter-btn:disabled {
+  background: #00000000;
+  border: 1px dashed #444;
+  color: gray;
+  cursor: default;
 }
 </style>
