@@ -181,10 +181,7 @@ The app is deployed as two separate services:
 The backend runs on Render's **free tier (512MB RAM)**. To stay within the memory limit:
 
 - Heavy ML libraries (`umap-learn`, `sentence-transformers`) are **lazy-loaded** — they are not imported at startup, only when the pipeline actually runs.
-- The **Refresh Map button is disabled** in the frontend. Manually triggering a full UMAP recompute (which loads both libraries simultaneously) exceeds 512MB and crashes the instance.
 - The map pipeline runs automatically once per day at **UTC 00:00** via APScheduler. This scheduled run recomputes positions for all users and writes them to `user_positions`. Individual map loads are always fast — they read precomputed positions from the database, not recompute them.
-
-To re-enable the Refresh Map button (e.g. when upgrading to a paid Render instance with ≥2GB RAM), uncomment the button in `frontend/src/views/PeopleMap.vue`.
 
 ---
 
