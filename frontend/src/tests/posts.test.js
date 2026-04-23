@@ -39,7 +39,6 @@ vi.mock('lucide-vue-next', () => ({
   Trash2: { template: '<span data-testid="icon-trash" />' },
   Flag: { template: '<span data-testid="icon-flag" />' },
   CheckCircle: { template: '<span data-testid="icon-check" />' },
-  UserRound: { template: '<span data-testid="icon-user" />' },
 }))
 
 // ─── 6. Default test post ─────────────────────────────────────────────────────
@@ -102,7 +101,7 @@ describe('Post.vue', () => {
     it('renders the tier label from utils', async () => {
       const wrapper = mountPost()
       await flushPromises()
-      expect(wrapper.find('.tier-badge').text()).toContain('Tier 1')
+      expect(wrapper.find('.tier-post').text()).toContain('Tier 1')
     })
 
     it('renders the first letter of nickname as avatar fallback', async () => {
@@ -189,6 +188,18 @@ describe('Post.vue', () => {
       const wrapper = mountPost({}, 'user-abc')
       await flushPromises()
       expect(wrapper.find('[data-testid="icon-flag"]').exists()).toBe(false)
+    })
+    
+    it('shows tier icon with avatar when the post belongs to another user', async () => {
+      const wrapper = mountPost()
+      await flushPromises()
+      expect(wrapper.find('.tier-user').exists()).toBe(true)
+    })
+
+    it('hides tier icon with avatar when the post belongs to current user', async () => {
+      const wrapper = mountPost({}, 'user-abc')
+      await flushPromises()
+      expect(wrapper.find('.tier-user').exists()).toBe(false)
     })
   })
 

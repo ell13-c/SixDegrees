@@ -3,22 +3,28 @@
     <div class="post-header">
       <div class="user-info">
         <div 
-          class="avatar" 
+          class="avatar"
           @click="router.push(`/profile/${post.nickname}`)"
           style="cursor:pointer"
         >
-          <img v-if="post.avatar_url" :src="post.avatar_url" class="avatar-img" />
-          <span v-else>{{ userInitial }}</span>
+          <div class="avatar-circle">
+            <img v-if="post.avatar_url" :src="post.avatar_url" class="avatar-img" />
+            <span v-else>{{ userInitial }}</span>
+          </div>
+          <div class="avatar-tier" v-if="!isOwnPost">
+            <span class="tier-user" :class="`tier-${post.friend_tier}`">
+            <component :is="tierIcon(post.friend_tier)" :size="12" /></span>
+          </div>
         </div>
         <div
           class="nickname"
           @click="router.push(`/profile/${post.nickname}`)"
           style="cursor:pointer"
-        >{{ post.nickname || 'Unknown User' }}</div>
+        >{{ post.nickname || 'Unknown User' }}
+      </div>
         <div class="post-meta">
           <span class="timestamp">{{ formatDate(post.created_at) }}</span>
-          <span v-if="isOwnPost" class="tier-badge tier-me"><UserRound :size="12" />Me</span>
-          <span v-else class="tier-badge" :class="`tier-${post.tier}`">
+          <span class="tier-post" :class="`tier-${post.tier}`">
             <component :is="tierIcon(post.tier)" :size="12" />
             {{ tierLabel(post.tier) }}
           </span>
@@ -106,7 +112,7 @@
           v-if="currentUserId && comment.user_id === currentUserId" 
           class="delete-comment-btn"
           @click="handleDeleteComment(comment.id)"
-          title="Archive Comment"
+          title="Delete Comment"
         >
           <Trash2 :size="16" />
         </button>
@@ -119,7 +125,7 @@
 <script setup>
 import { ref, computed, onMounted} from 'vue'
 import { supabase } from '../lib/supabase'
-import { Heart, MessageCircle, Trash2, Flag, CheckCircle, UserRound } from 'lucide-vue-next'
+import { Heart, MessageCircle, Trash2, Flag, CheckCircle } from 'lucide-vue-next'
 import { useRouter } from 'vue-router'
 import { formatDate, tierIcon, tierLabel } from '../utils.js'
 
@@ -319,15 +325,6 @@ async function handleReport() {
 
 <style scoped>
 
-.avatar {
-  overflow: hidden;
-}
-.avatar-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
 .post-card {
   background: #2d2d2d;
   border-radius: 8px;
@@ -367,8 +364,16 @@ async function handleReport() {
 }
 
 .avatar {
+  position: relative;
+  display: flex;
   width: 40px;
   height: 40px;
+}
+
+.avatar-circle {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   background: #088F8F;
   display: flex;
@@ -376,6 +381,23 @@ async function handleReport() {
   justify-content: center;
   font-weight: bold;
   color: white;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.avatar-tier {
+  position: absolute;
+  width: 40%;
+  height: 40%;
+  bottom: 0%;
+  right: 0%;
+  display: flex;
+  flex-direction: column-reverse;
 }
 
 .nickname {
@@ -391,10 +413,21 @@ async function handleReport() {
   color: #888;
 }
 
-.tier-badge {
+.tier-user {
+  padding: 0.1rem 0.1rem;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.tier-post {
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-size: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 }
 
 .tier-1 {
@@ -410,12 +443,6 @@ async function handleReport() {
 .tier-3 {
   background: #2f3a1e;
   color: #b6ff6b;
-}
-
-.tier-me {
-  background: #5f1e1e;
-  color: #ff6b6b;
-  font-weight: 600;
 }
 
 .post-content {
@@ -531,16 +558,6 @@ async function handleReport() {
   color: #088F8F;
   margin-right: 0.5rem;
 }
-
-.tier-badge {
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.75rem;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;  /* Add this */
-}
-
 
 .delete-comment-btn {
   background: transparent;
