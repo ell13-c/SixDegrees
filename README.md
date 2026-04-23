@@ -35,14 +35,18 @@ For every pair of users (i, j), we compute a **profile similarity score** from 0
 
 | Field | Method | Weight |
 |-------|--------|--------|
-| Interests | Jaccard similarity on stemmed keyword sets | 0.40 |
+| Interests + Bio | **AI embedding similarity** (see below) | 0.40 |
 | Location | Tiered: same city → 1.0 / same state → 0.5 / different → 0.0 | 0.20 |
 | Languages | Jaccard similarity on language sets | 0.15 |
 | Education (field of study) | Tiered categorical: exact match → 1.0 / same broad category → 0.5 | 0.10 |
 | Industry | Tiered categorical: exact match → 1.0 / same broad category → 0.5 | 0.10 |
 | Age | Inverse distance: 1 / (1 + \|age_a − age_b\|) | 0.05 |
 
-**Interests and bio** also go through a sentence-transformer embedding (`all-MiniLM-L6-v2`, 384 dimensions) and contribute a cosine similarity score. This captures semantic similarity — "hiking" and "trail running" score higher than a plain keyword match would give them.
+#### AI Embedding Model (the core of interest matching)
+
+Interests and bio are scored using a **pre-trained sentence-transformer model** (`all-MiniLM-L6-v2`, 384 dimensions). Each user's interests and bio are concatenated into a single text string and encoded into a 384-dimensional vector. Similarity between two users is then the **cosine similarity** between their vectors.
+
+This means the system understands *semantic meaning*, not just exact keyword overlap. "Hiking" and "trail running" score high similarity even though they share no words. "Machine learning" and "AI" are treated as near-synonyms. Plain keyword matching (Jaccard) cannot do this — the embedding model is what makes interest matching intelligent.
 
 The weighted sum across all fields gives a scalar **profile similarity** ∈ [0, 1]. We invert it to get **profile distance**:
 
