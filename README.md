@@ -4,6 +4,8 @@ A social networking app built around a 2D People Map. Users are plotted in space
 
 ## Try It Out
 
+Visit the live app at **https://six-degrees-nine.vercel.app**
+
 Want to explore without signing up? Use the demo account:
 
 | Field | Value |
