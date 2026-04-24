@@ -6,6 +6,8 @@ A social networking app built around a 2D People Map. Users are plotted in space
 
 Visit the live app at **https://six-degrees-omega.vercel.app**
 
+> **Note:** The People Map may take 1-2 minutes to load on first use. This is due to Render's free-tier cold start limit (the backend spins down after inactivity), not the code itself. Run the app locally for seamless performance.
+
 Want to explore without signing up? Use the demo account:
 
 | Field | Value |
