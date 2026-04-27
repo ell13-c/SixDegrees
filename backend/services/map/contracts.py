@@ -80,4 +80,4 @@ class EgoMapResponse:
     """
 
     coordinates: list[EgoMapNode]
-    computed_at: str
+    computed_at: str | None    # ISO 8601 timestamp; None if positions table is empty

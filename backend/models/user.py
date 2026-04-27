@@ -48,6 +48,6 @@ class UserProfile(BaseModel):
 
     @field_validator("interests", "languages", mode="before")
     @classmethod
-    def coerce_none_to_empty_list(cls, v):
+    def coerce_none_to_empty_list(cls, v) -> list:
         """Coerce ``None`` to an empty list so callers never receive ``None`` for list fields."""
         return v if v is not None else []

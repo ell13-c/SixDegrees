@@ -85,5 +85,3 @@ def record_comment(
         HTTPException 400: If the acting user and target user are the same.
     """
     return _record_interaction(acting_user_id, body.target_user_id, "comments_count")
-
-

@@ -26,20 +26,13 @@ def build_combined_distance(data: PipelineInput) -> np.ndarray:
     profiles = data.profiles
     n = len(profiles)
 
-    # --- 1. Profile distance ---
-    sim_matrix = build_similarity_matrix(profiles)
-    weighted = apply_weights(sim_matrix)
-    profile_dist = similarity_to_distance(weighted)  # (N, N), diag=0
+    profile_dist = similarity_to_distance(apply_weights(build_similarity_matrix(profiles)))
 
-    # --- 2. Interaction distance ---
-    # Build canonical-pair lookup: (uid_a, uid_b) where uid_a < uid_b
+    # Canonical-pair lookup: (uid_a, uid_b) where uid_a < uid_b
     interaction_map: dict[tuple[str, str], dict] = {
         (r["user_id_a"], r["user_id_b"]): r for r in data.interactions
     }
 
-    uid_to_idx: dict[str, int] = {p.id: i for i, p in enumerate(profiles)}
-
-    # Compute raw interaction scores for every pair
     raw_scores = np.zeros((n, n))
     for i in range(n):
         for j in range(i + 1, n):
@@ -55,20 +48,13 @@ def build_combined_distance(data: PipelineInput) -> np.ndarray:
                 raw_scores[i][j] = score
                 raw_scores[j][i] = score
 
-    # Normalize to [0, 1]
     max_score = raw_scores.max()
-    if max_score > 0:
-        normalized = raw_scores / max_score
-    else:
-        normalized = raw_scores  # all zeros
+    normalized = raw_scores / max_score if max_score > 0 else raw_scores
 
     # More interaction → lower distance
     interaction_dist = 1.0 - normalized
     np.fill_diagonal(interaction_dist, 0.0)
 
-    # --- 3. Combine ---
-    combined = ALPHA * profile_dist + BETA * interaction_dist
-    combined = np.clip(combined, 0.0, 1.0)
+    combined = np.clip(ALPHA * profile_dist + BETA * interaction_dist, 0.0, 1.0)
     np.fill_diagonal(combined, 0.0)
-
     return combined

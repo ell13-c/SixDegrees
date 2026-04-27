@@ -30,13 +30,7 @@ async def _run_job() -> None:
     """
     if not GLOBAL_COMPUTE_ENABLED:
         logger.info("Global compute skipped (GLOBAL_COMPUTE_ENABLED=False)")
-        diagnostics.record_run(
-            status="skipped",
-            user_count=0,
-            edge_count=0,
-            duration_ms=0,
-            error=None,
-        )
+        diagnostics.record_run(status="skipped", user_count=0, edge_count=0, duration_ms=0, error=None)
         return
     if not acquire_lock():
         logger.info("Global compute skipped (lock already held)")

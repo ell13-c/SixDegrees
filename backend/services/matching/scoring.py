@@ -23,13 +23,11 @@ FEATURE_COLS = list(PROFILE_WEIGHTS.keys())
 
 
 def _build_embeddings(profiles: list[UserProfile]) -> dict[str, np.ndarray]:
-    """Embed profiles and return a dict keyed by user ID. Only called when EMBEDDING_FIELDS is non-empty."""
     raw = embed_profiles(profiles)
     return {profiles[i].id: raw[i] for i in range(len(profiles))}
 
 
 def _text_score(u1: UserProfile, u2: UserProfile, embeddings: dict[str, np.ndarray]) -> float:
-    """Cosine sim (embedding) or Jaccard fallback depending on EMBEDDING_FIELDS."""
     if EMBEDDING_FIELDS:
         return cosine_sim(embeddings[u1.id], embeddings[u2.id])
     return jaccard(u1.interests, u2.interests, stem=True)
@@ -40,7 +38,7 @@ def _similarity_vector(
     u2: UserProfile,
     embeddings: dict[str, np.ndarray],
 ) -> list[float]:
-    """Compute raw [0,1] similarity score per field for a user pair."""
+    """Per-field [0,1] similarity scores in FEATURE_COLS order."""
     return [
         _text_score(u1, u2, embeddings),
         tiered_location(u1.city, u1.state, u2.city, u2.state),
@@ -78,7 +76,6 @@ def get_top_matches(
 
     all_users must NOT include current_user.
     Returns list of {"user": UserProfile, "similarity_score": float}.
-    When EMBEDDING_FIELDS is empty, embed_profiles is never called.
     """
     all_profiles = all_users + [current_user]
     if EMBEDDING_FIELDS:
@@ -98,10 +95,7 @@ def build_similarity_matrix(
     users: list[UserProfile],
     embeddings: dict[str, np.ndarray] | None = None,
 ) -> np.ndarray:
-    """Build an (N x N x F) matrix of per-field similarity scores.
-
-    Returns shape (N, N, F). If embeddings is None, computes internally.
-    """
+    """Build an (N, N, F) matrix of per-field similarity scores."""
     if embeddings is None:
         if EMBEDDING_FIELDS:
             embeddings = _build_embeddings(users)

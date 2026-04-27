@@ -75,7 +75,7 @@ def run() -> PipelineResult:
 
 
 def run_pipeline_for_user(user_id: str) -> None:
-    """Compatibility shim — calls the global pipeline."""
+    """Compatibility shim — calls the global pipeline (user_id is validated but not used)."""
     if not user_id or not isinstance(user_id, str):
         raise ValueError("user_id must be a non-empty string")
     run()

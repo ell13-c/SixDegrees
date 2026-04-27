@@ -40,10 +40,8 @@ def build_ego_map(requester_id: str) -> EgoMapResponse:
     if requester_id not in positions:
         raise HTTPException(status_code=404, detail="Map not yet computed for this user")
 
-    # Fetch only direct friends (max_tier=1) using the friendship graph.
-    # extended_friends includes the requester themselves at depth 0.
+    # extended_friends includes the requester at depth 0; exclude them from friend_tiers.
     friends_data = sb.rpc("extended_friends", {"max_tier": 3, "target_user_id": requester_id}).execute().data or []
-    # Build {user_id: friendship_tier} — exclude the requester (depth 0)
     friend_tiers: dict[str, int] = {
         r["id"]: r["tier"]
         for r in friends_data
@@ -55,8 +53,7 @@ def build_ego_map(requester_id: str) -> EgoMapResponse:
 
     friends_lookup: dict[str, dict] = {r["id"]: r for r in friends_data}
 
-    # Include the requester at (0, 0) so the frontend's `length - 1` count is correct.
-    # ClosenessMap filters out (0, 0) nodes from display; Connections filters by user_id.
+    # Requester placed at (0, 0); all other coordinates are relative to them.
     requester_profile = friends_lookup.get(requester_id, {})
     result: list[EgoMapNode] = [EgoMapNode(
         user_id=requester_id,

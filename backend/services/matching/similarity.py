@@ -4,22 +4,17 @@ All functions return a float in [0, 1]. They are pure functions with no I/O
 or side effects, which makes them straightforward to unit test in isolation.
 """
 
-# Simple suffix-stripping stem for interests.
-# Unifies common variants: cooking/cook, hiking/hike, running/run, etc.
-# No external library — intentionally minimal.
+# Strips common English suffixes to unify variants like cooking/cook, hiking/hike.
 _STEM_SUFFIXES = ("ing", "ers", "er", "ed", "ion", "s")
 
 
 def _stem(word: str) -> str:
-    """Strip common English suffixes from a lowercase word."""
     w = word.lower().strip()
     for suffix in _STEM_SUFFIXES:
         if w.endswith(suffix) and len(w) - len(suffix) >= 3:
             return w[: -len(suffix)]
     return w
 
-# Category maps for tiered categorical matching.
-# Extend these as you add more options to the profile form.
 
 FIELD_OF_STUDY_CATEGORIES: dict[str, str] = {
     # STEM
@@ -101,7 +96,7 @@ INDUSTRY_CATEGORIES: dict[str, str] = {
 def jaccard(a: list[str], b: list[str], stem: bool = False) -> float:
     """Jaccard similarity between two lists treated as sets.
 
-    Used for: interests (stem=True), languages (stem=False).
+    stem=True applies suffix stripping (used for interests).
     Returns 0.0 if both sets are empty.
     """
     if stem:
@@ -111,18 +106,11 @@ def jaccard(a: list[str], b: list[str], stem: bool = False) -> float:
         set_a, set_b = set(a), set(b)
     if not set_a and not set_b:
         return 0.0
-    intersection = len(set_a & set_b)
-    union = len(set_a | set_b)
-    return intersection / union
+    return len(set_a & set_b) / len(set_a | set_b)
 
 
 def tiered_location(city1: str, state1: str, city2: str, state2: str) -> float:
-    """Tiered location similarity.
-
-    Same city  → 1.0
-    Same state → 0.5
-    Different  → 0.0
-    """
+    """Same city → 1.0 / same state → 0.5 / different → 0.0."""
     if city1 is None or state1 is None or city2 is None or state2 is None:
         return 0.0
     if city1.lower() == city2.lower():
@@ -133,14 +121,7 @@ def tiered_location(city1: str, state1: str, city2: str, state2: str) -> float:
 
 
 def tiered_categorical(a: str, b: str, category_map: dict[str, str]) -> float:
-    """Tiered categorical similarity using a category map.
-
-    Exact match        → 1.0
-    Same category      → 0.5
-    Different category → 0.0
-
-    Used for: field_of_study, occupation/industry.
-    """
+    """Exact match → 1.0 / same category → 0.5 / different → 0.0."""
     if a is None or b is None:
         return 0.0
     a_norm, b_norm = a.lower().strip(), b.lower().strip()
@@ -154,12 +135,7 @@ def tiered_categorical(a: str, b: str, category_map: dict[str, str]) -> float:
 
 
 def inverse_distance_age(a: int, b: int) -> float:
-    """Inverse distance similarity for age.
-
-    Returns 1 / (1 + |a - b|).
-    Same age → 1.0, 5 years apart → ~0.17.
-    Min-max normalization in scoring.py brings this to a consistent range.
-    """
+    """Returns 1 / (1 + |a - b|). Same age → 1.0, 10 years apart → ~0.09."""
     if a is None or b is None:
         return 0.0
     return 1.0 / (1.0 + abs(a - b))
