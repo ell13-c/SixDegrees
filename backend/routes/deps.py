@@ -1,7 +1,5 @@
 """Shared FastAPI dependencies for Phase 4 write endpoints."""
 
-from typing import Optional
-
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from supabase_auth.errors import AuthApiError
@@ -13,7 +11,7 @@ _bearer = HTTPBearer(auto_error=False)
 
 
 def get_current_user(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(_bearer),
+    credentials: HTTPAuthorizationCredentials | None = Depends(_bearer),
 ) -> str:
     """Validate the Supabase JWT from Authorization: Bearer <token> header.
 

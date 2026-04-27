@@ -59,5 +59,3 @@ def record_comment(
     acting_user_id: str = Depends(get_current_user),
 ):
     return _record_interaction(acting_user_id, body.target_user_id, "comments_count")
-
-

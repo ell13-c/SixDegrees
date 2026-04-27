@@ -41,15 +41,16 @@ def update_profile(
 ):
     payload = {"id": acting_user_id}
     raw = body.model_dump()
-    if raw.get("interests") is not None:
-        seen: set[str] = set()
-        normalized: list[str] = []
-        for item in raw["interests"]:
-            key = item.lower().strip()
-            if key and key not in seen:
-                seen.add(key)
-                normalized.append(key)
-        raw["interests"] = normalized
+    for list_field in ("interests", "languages"):
+        if raw.get(list_field) is not None:
+            seen: set[str] = set()
+            normalized: list[str] = []
+            for item in raw[list_field]:
+                key = item.lower().strip()
+                if key and key not in seen:
+                    seen.add(key)
+                    normalized.append(key)
+            raw[list_field] = normalized
     payload.update({k: v for k, v in raw.items() if v is not None})
     payload["is_onboarded"] = True
 
