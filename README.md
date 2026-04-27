@@ -330,7 +330,7 @@ backend/
   services/matching/  # Scoring, similarity, embedding (all-MiniLM-L6-v2)
   scripts/seed.py     # Seed 100 deterministic fake profiles
   sql/02_schema.sql   # Contributor DB setup script
-  tests/              # 141 tests, all mocked (no live DB calls)
+  tests/              # 138 tests across routes/, map/, matching/, core/ — all mocked
 
 frontend/
   src/views/          # Page components (Home, Profile, PeopleMap, Match, etc.)

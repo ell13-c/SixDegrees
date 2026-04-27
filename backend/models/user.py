@@ -20,5 +20,5 @@ class UserProfile(BaseModel):
 
     @field_validator("interests", "languages", mode="before")
     @classmethod
-    def coerce_none_to_empty_list(cls, v):
+    def coerce_none_to_empty_list(cls, v) -> list:
         return v if v is not None else []

@@ -1,4 +1,5 @@
-import dataclasses
+import logging
+from dataclasses import asdict
 from fastapi import APIRouter, Depends, HTTPException
 from config.settings import get_supabase_client
 from routes.deps import get_current_user
@@ -6,6 +7,7 @@ from services.map.ego import build_ego_map
 from services.map.pipeline import run
 
 router = APIRouter(prefix="/map", tags=["map"])
+logger = logging.getLogger(__name__)
 
 
 @router.get("/{user_id}")
@@ -15,8 +17,7 @@ async def get_map(
 ):
     if acting_user_id != user_id:
         raise HTTPException(status_code=403, detail="You may only view your own map")
-    response = build_ego_map(user_id)
-    return dataclasses.asdict(response)
+    return asdict(build_ego_map(user_id))
 
 
 @router.post("/trigger/{user_id}")
@@ -28,8 +29,8 @@ async def trigger_map(
         raise HTTPException(status_code=403, detail="You may only trigger your own map")
     try:
         run()
-    except Exception as e:
-        print(f"Pipeline error: {e}")
+    except Exception:
+        logger.exception("Pipeline error")
         raise HTTPException(status_code=503, detail="Map computation failed. Check server logs.")
     sb = get_supabase_client()
     rows = sb.table("user_positions").select("computed_at").limit(1).execute().data
