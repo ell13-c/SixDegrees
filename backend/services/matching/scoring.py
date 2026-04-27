@@ -1,3 +1,11 @@
+"""Scoring and matrix-building functions for profile similarity.
+
+Combines per-field similarity scores (from ``similarity.py``) with
+sentence-transformer embeddings (from ``embedder.py``) into a single
+weighted similarity score used by both the matching endpoint and the
+global UMAP pipeline.
+"""
+
 import numpy as np
 from models.user import UserProfile
 from config.settings import PROFILE_WEIGHTS, EMBEDDING_FIELDS

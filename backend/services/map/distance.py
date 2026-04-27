@@ -1,3 +1,10 @@
+"""Builds the combined N x N distance matrix for the global pipeline.
+
+Combines profile-similarity distance (weighted cosine + field similarity)
+with interaction distance (normalised like and comment counts) using fixed
+weights ALPHA and BETA from ``config.settings``.
+"""
+
 import numpy as np
 
 from config.settings import ALPHA, BETA, INTERACTION_WEIGHTS

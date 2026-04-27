@@ -1,3 +1,10 @@
+"""Map routes for retrieving and triggering the People Map pipeline.
+
+All endpoints require a valid Supabase JWT in the ``Authorization: Bearer``
+header. A user may only access their own map; attempting to read or trigger
+another user's map returns 403.
+"""
+
 import logging
 from dataclasses import asdict
 from fastapi import APIRouter, Depends, HTTPException
@@ -15,6 +22,20 @@ async def get_map(
     user_id: str,
     acting_user_id: str = Depends(get_current_user),
 ):
+    """Return the ego-centric map for ``user_id``.
+
+    Args:
+        user_id: UUID of the user whose map to retrieve.
+        acting_user_id: UUID extracted from the JWT (injected by dependency).
+
+    Returns:
+        dict: Serialised ``EgoMapResponse`` with ``computed_at`` and
+        ``coordinates`` fields.
+
+    Raises:
+        HTTPException 403: If ``acting_user_id != user_id``.
+        HTTPException 404: If the user has no computed position yet.
+    """
     if acting_user_id != user_id:
         raise HTTPException(status_code=403, detail="You may only view your own map")
     return asdict(build_ego_map(user_id))
@@ -25,6 +46,22 @@ async def trigger_map(
     user_id: str,
     acting_user_id: str = Depends(get_current_user),
 ):
+    """Manually trigger a full pipeline recompute for all users.
+
+    Runs the global coordinate pipeline synchronously and returns the
+    ``computed_at`` timestamp from the freshly written positions.
+
+    Args:
+        user_id: UUID of the requesting user (must match JWT subject).
+        acting_user_id: UUID extracted from the JWT (injected by dependency).
+
+    Returns:
+        dict: ``{"status": "ok", "computed_at": "<ISO 8601 timestamp>"}``.
+
+    Raises:
+        HTTPException 403: If ``acting_user_id != user_id``.
+        HTTPException 503: If the pipeline raises any exception.
+    """
     if acting_user_id != user_id:
         raise HTTPException(status_code=403, detail="You may only trigger your own map")
     try:

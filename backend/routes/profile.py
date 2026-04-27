@@ -13,6 +13,8 @@ router = APIRouter(prefix="/profile", tags=["profile"])
 
 
 class ProfileBody(BaseModel):
+    """Request body for ``PUT /profile``. All fields are optional; ``None`` fields are ignored."""
+
     nickname: str | None = None
     city: str | None = None
     state: str | None = None
@@ -28,6 +30,14 @@ class ProfileBody(BaseModel):
 def get_profile(
     acting_user_id: str = Depends(get_current_user),
 ):
+    """Return the authenticated user's profile row.
+
+    Returns:
+        dict: The first result row from the ``get_profile`` Supabase RPC.
+
+    Raises:
+        HTTPException 404: If no profile row exists for the user.
+    """
     result = get_supabase_client().rpc("get_profile", {"p_id": acting_user_id}).execute()
     if not result.data:
         raise HTTPException(status_code=404, detail="Profile not found")
@@ -39,6 +49,18 @@ def update_profile(
     body: ProfileBody,
     acting_user_id: str = Depends(get_current_user),
 ):
+    """Create or update the authenticated user's profile.
+
+    ``interests`` values are lowercased and deduplicated before writing.
+    The ``is_onboarded`` flag is always set to ``True`` on a successful update.
+
+    Args:
+        body: Partial profile fields to write. ``None`` fields are ignored.
+        acting_user_id: UUID extracted from the JWT (injected by dependency).
+
+    Returns:
+        dict: ``{"detail": "Profile updated"}``.
+    """
     payload = {"id": acting_user_id}
     raw = body.model_dump()
     for list_field in ("interests", "languages"):

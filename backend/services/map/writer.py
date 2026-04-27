@@ -1,9 +1,25 @@
+"""Normalises UMAP coordinates and writes them to ``public.user_positions``.
+
+Normalisation maps each axis to ``[0, 1]`` so that coordinates remain
+consistent across pipeline runs regardless of UMAP's unanchored output scale.
+"""
+
 from datetime import datetime, timezone
 import numpy as np
 from config.settings import get_supabase_client
 
 
 def write(user_ids: list[str], new_coords: np.ndarray) -> None:
+    """Normalise ``new_coords`` to ``[0, 1]`` and upsert into ``user_positions``.
+
+    Each row is upserted (insert or update on ``user_id`` PK) with a shared
+    ``computed_at`` timestamp set to UTC now.
+
+    Args:
+        user_ids: Ordered list of user UUIDs; index ``i`` corresponds to row
+            ``i`` of ``new_coords``.
+        new_coords: Raw ``(N, 2)`` UMAP output from ``project()``.
+    """
     # Normalize to [0, 1] so coordinates are in a consistent space across runs.
     # UMAP's raw output is unanchored — scale, translation, and orientation can
     # differ between runs even with the same random seed.

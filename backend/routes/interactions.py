@@ -14,6 +14,8 @@ router = APIRouter(prefix="/interactions", tags=["interactions"])
 
 
 class InteractionBody(BaseModel):
+    """Request body for interaction endpoints containing the target user's UUID."""
+
     target_user_id: str
 
 
@@ -50,6 +52,18 @@ def record_like(
     body: InteractionBody,
     acting_user_id: str = Depends(get_current_user),
 ):
+    """Record a like interaction between the authenticated user and a target user.
+
+    Args:
+        body: JSON body containing ``target_user_id``.
+        acting_user_id: UUID extracted from the JWT (injected by dependency).
+
+    Returns:
+        dict: ``{"detail": "likes recorded"}``.
+
+    Raises:
+        HTTPException 400: If the acting user and target user are the same.
+    """
     return _record_interaction(acting_user_id, body.target_user_id, "likes_count")
 
 
@@ -58,4 +72,16 @@ def record_comment(
     body: InteractionBody,
     acting_user_id: str = Depends(get_current_user),
 ):
+    """Record a comment interaction between the authenticated user and a target user.
+
+    Args:
+        body: JSON body containing ``target_user_id``.
+        acting_user_id: UUID extracted from the JWT (injected by dependency).
+
+    Returns:
+        dict: ``{"detail": "comments recorded"}``.
+
+    Raises:
+        HTTPException 400: If the acting user and target user are the same.
+    """
     return _record_interaction(acting_user_id, body.target_user_id, "comments_count")

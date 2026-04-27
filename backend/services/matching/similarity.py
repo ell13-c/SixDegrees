@@ -1,5 +1,8 @@
-# Per-field similarity functions.
-# All return a float in [0, 1]. Pure functions — no I/O.
+"""Per-field similarity functions for user profile matching.
+
+All functions return a float in [0, 1]. They are pure functions with no I/O
+or side effects, which makes them straightforward to unit test in isolation.
+"""
 
 # Strips common English suffixes to unify variants like cooking/cook, hiking/hike.
 _STEM_SUFFIXES = ("ing", "ers", "er", "ed", "ion", "s")
