@@ -45,7 +45,10 @@ def test_run_job_skips_when_lock_held(monkeypatch):
     from services.map import scheduler as sched_mod
     from unittest.mock import MagicMock
 
+    # Patch both the source module and the scheduler's own imported reference so
+    # the check inside _run_job sees True regardless of .env presence.
     monkeypatch.setattr(cfg, "GLOBAL_COMPUTE_ENABLED", True)
+    monkeypatch.setattr(sched_mod, "GLOBAL_COMPUTE_ENABLED", True)
     monkeypatch.setattr(sched_mod, "acquire_lock", lambda: False)
 
     mock_run = MagicMock()

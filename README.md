@@ -1,5 +1,7 @@
 # SixDegrees
 
+**Live app: https://six-degrees-omega.vercel.app**
+
 A social networking app built around a 2D People Map. Users are plotted in space based on profile similarity and interaction history. The closer two people are on the map, the more similar they are. Matching uses UMAP dimensionality reduction over a combined profile distance + interaction distance matrix.
 
 ## Try It Out
@@ -158,19 +160,24 @@ The expensive O(N²) work happens once per day at UTC 00:00. Every individual ma
 
 ---
 
-## Architecture
+## Tech Stack
 
-```
-Frontend (Vue 3)
-    ├── Social features (posts, likes, comments, friends)
-    │       └── Supabase RPCs directly (FastAPI bypassed)
-    └── Map + matching (coordinates, similarity scores)
-            └── FastAPI REST API → Supabase internally
-```
-
-Two data paths:
-- **Social features:** the frontend calls Supabase PostgreSQL functions (RPCs) directly. FastAPI is not involved.
-- **Map + matching:** the frontend calls FastAPI endpoints, which read/write Supabase internally using a service-role key.
+| Layer | Technology | Purpose |
+|-------|-----------|---------|
+| Frontend | Vue 3 + Vite | SPA with reactive UI components |
+| Frontend routing | Vue Router | Auth-guarded client-side routing |
+| Backend | FastAPI (Python) | REST API for map, matching, and profile endpoints |
+| Database | Supabase (PostgreSQL) | Hosted Postgres with Auth, RLS, and RPCs |
+| ORM / client | supabase-py | Backend service-role DB access |
+| Data modeling | Pydantic v2 | Request/response validation and coercion |
+| Dimensionality reduction | umap-learn | UMAP 2D projection of the combined distance matrix |
+| Embeddings | sentence-transformers (`all-MiniLM-L6-v2`) | Semantic similarity for interests and bio |
+| Similarity math | NumPy, scikit-learn | Distance matrix construction and normalization |
+| Scheduling | APScheduler | Daily UTC 00:00 pipeline trigger |
+| Testing | pytest + pytest-cov | Unit and integration tests (138 tests, all mocked) |
+| API docs | pdoc | Auto-generated HTML documentation |
+| Frontend hosting | Vercel | Static SPA deployment |
+| Backend hosting | Render (free tier) | FastAPI server deployment |
 
 ## Deployment
 
@@ -183,13 +190,30 @@ The backend runs on Render's **free tier (512MB RAM)**. To stay within the memor
 - Heavy ML libraries (`umap-learn`, `sentence-transformers`) are **lazy-loaded**. They are not imported at startup, only when the pipeline actually runs.
 - The map pipeline runs automatically once per day at **UTC 00:00** via APScheduler. This scheduled run recomputes positions for all users and writes them to `user_positions`. Individual map loads are always fast because they read precomputed positions from the database.
 
+### Scheduled Pipeline (currently disabled on the live demo)
+
+The automatic daily pipeline (`GLOBAL_COMPUTE_ENABLED`) is **turned off** on the live demo. Two reasons:
+
+1. **Render free tier spins down** after 15 minutes of inactivity. A server that is asleep cannot run scheduled jobs reliably.
+2. **Memory headroom.** The UMAP + sentence-transformer stack peaks above 512 MB on larger user sets, which can OOM-kill the free-tier instance.
+
+When `GLOBAL_COMPUTE_ENABLED=true` is set in `backend/.env` and the server stays running, the pipeline fires every day at **UTC 00:00** and:
+
+1. Fetches all user profiles and interaction counts from Supabase.
+2. Builds an N×N combined distance matrix (profile similarity + interaction history).
+3. Runs UMAP to project every user to a 2D coordinate.
+4. Normalises coordinates to [0, 1] and upserts them into `public.user_positions`.
+5. Logs the run (user count, duration, status) to `public.pipeline_runs`.
+
+After each run, every user's map position updates automatically on their next map load — no manual trigger needed.
+
 ---
 
 ## Prerequisites
 
 - Python 3.11+
 - Node 18+
-- A [Supabase](https://supabase.com) project (free tier works)
+- A Supabase project (free tier works)
 
 ## Supabase Setup
 
@@ -330,7 +354,7 @@ backend/
   services/matching/  # Scoring, similarity, embedding (all-MiniLM-L6-v2)
   scripts/seed.py     # Seed 100 deterministic fake profiles
   sql/02_schema.sql   # Contributor DB setup script
-  tests/              # 141 tests, all mocked (no live DB calls)
+  tests/              # 138 tests, all mocked (no live DB calls)
 
 frontend/
   src/views/          # Page components (Home, Profile, PeopleMap, Match, etc.)
@@ -341,4 +365,185 @@ frontend/
 demo/
   sixdegrees_demo.ipynb            # Eleanor/Brita two-case algorithm demo
   embedding_similarity_demo.ipynb  # Live embedding similarity demo
+
+docs/
+  api/                             # Auto-generated HTML API docs (pdoc)
 ```
+
+## Architecture Overview
+
+### High-Level Component Diagram
+
+```
++-------------------+          +-----------------------+
+|   Vue 3 Frontend  |          |  Supabase (Postgres)  |
+|   (Vercel)        |          |  (hosted DB + Auth)   |
+|                   |          |                       |
+|  Social features  +--------->+  RPCs (posts, likes,  |
+|  (posts, friends) |  direct  |  friends, comments)   |
+|                   |  RPC     |                       |
+|  Map + Matching   +----+     |  public.profiles      |
+|                   |    |     |  public.interactions  |
++-------------------+    |     |  public.user_positions|
+                         |     +-----------------------+
+                         |                ^
+                         v                |
+              +--------------------+      |
+              |  FastAPI Backend   +------+
+              |  (Render)          |  service-role key
+              |                    |
+              |  GET /profile      |
+              |  PUT /profile      |
+              |  GET /map/:id      |
+              |  POST /map/trigger |
+              |  GET /match        |
+              |  POST /interactions|
+              +--------------------+
+```
+
+### Pipeline Sequence Diagram
+
+```
+Scheduler (00:00 UTC daily)
+         |
+         v
+   fetcher.fetch()
+         |
+         | PipelineInput (N profiles + interactions)
+         v
+   distance.build_combined_distance()
+         |
+         | N x N distance matrix
+         v
+   projector.project()          <-- UMAP (metric="precomputed")
+         |
+         | (N, 2) raw coords
+         v
+   validation.validate_output()
+         |
+         v
+   writer.write()               <-- normalise to [0,1], upsert user_positions
+         |
+         v
+   diagnostics.record_run()     <-- log to pipeline_runs
+```
+
+### Database Schema
+
+```
+private schema (owned by frontend/DB team)
+  private.profiles        -- canonical user rows
+  private.posts           -- post content
+  private.likes           -- post likes
+  private.comments        -- post comments
+
+public schema (managed by backend)
+  public.profiles         -- writable VIEW over private.profiles
+  public.interactions     -- (user_id_a, user_id_b, likes_count, comments_count)
+  public.user_positions   -- (user_id, x, y, computed_at)  UMAP output
+  public.pipeline_runs    -- diagnostics log per pipeline execution
+```
+
+## Usage Example
+
+### Try the Live App
+
+Visit **https://six-degrees-omega.vercel.app**, sign up with any email, complete onboarding, and click "People Map" to see your position relative to other users.
+
+### Run Locally (Example Walkthrough)
+
+After completing backend and frontend setup:
+
+1. Start the backend:
+
+```bash
+cd backend
+source venv/bin/activate
+uvicorn app:app --reload
+# Server running at http://localhost:8000
+```
+
+2. Start the frontend:
+
+```bash
+cd frontend
+npm run dev
+# Dev server at http://localhost:5173
+```
+
+3. Open `http://localhost:5173` in your browser, create an account, and finish onboarding.
+
+4. Seed the database with 100 example users so the map has something to compute:
+
+```bash
+cd backend
+source venv/bin/activate
+python scripts/seed.py
+```
+
+5. Trigger the pipeline manually via the API (replace `<TOKEN>` with a valid Supabase JWT and `<USER_ID>` with your UUID):
+
+```bash
+curl -X POST http://localhost:8000/map/trigger/<USER_ID> \
+  -H "Authorization: Bearer <TOKEN>"
+# {"status":"ok","computed_at":"2026-04-27T00:00:00+00:00"}
+```
+
+6. Fetch your top matches:
+
+```bash
+curl http://localhost:8000/match \
+  -H "Authorization: Bearer <TOKEN>"
+# {"matches":[{"user_id":"...","nickname":"eleanor","similarity_score":0.8142},...]}
+```
+
+7. Open the People Map in the UI to see your position visualised alongside your connections.
+
+## Team Members and Contributions
+
+| Member | Role | Contributions |
+|--------|------|---------------|
+| HyangMok Baek | Backend and Algorithm | FastAPI application, UMAP pipeline, matching algorithm (sentence-transformer embeddings, similarity scoring), full test suite (138 tests) |
+| Eleanor Colvin | Frontend and UI Design | Vue 3 SPA views, Vue Router with auth guards, Supabase JS client integration, post/like/comment/friend UI components, filter UI |
+| Amanda Hsu | Frontend and Map Visualization | People Map component, closeness map rendering, map tier visualization, frontend map interactions |
+| Joshua Kunnappilly | Backend and Database | Supabase schema design, private schema architecture, PostgreSQL RPCs and triggers, database migrations |
+
+## Retrospective
+
+**What went well:**
+
+The split between a backend-owned REST API and a frontend that calls Supabase RPCs directly turned out to be a clean boundary. Each team member could work independently without stepping on the other's code. The pipeline architecture (one stage per module, all wired through contracts) made it easy to test each stage in isolation and to swap or extend any step without touching the others.
+
+Using a pre-trained sentence-transformer model for interest similarity was a good decision early on. It gave the matching algorithm semantic understanding of interests (so "hiking" and "trail running" score close together) without writing any NLP code from scratch.
+
+**What we would do differently:**
+
+The Render free-tier cold start is a real usability problem. A user who opens the app after a period of inactivity waits over a minute for the backend to wake up before they can do anything. We would use a paid tier or a lightweight keep-alive ping in production.
+
+The daily UMAP pipeline also ends up disabled on the live demo because the 512 MB memory cap on Render's free tier is not enough for the full `umap-learn` + `sentence-transformers` stack on a non-trivial user set. A production deployment would need either more memory or an offline worker process separate from the web server.
+
+On the frontend side, the first version of the People Map filter was more complex than it needed to be. It was later simplified (see the filter expansion PR), but we would build that simplicity in from the start.
+
+## API Documentation
+
+Auto-generated HTML documentation for the backend modules is available in `docs/api/index.html`. Open it in any browser.
+
+To regenerate after code changes:
+
+```bash
+cd backend
+source venv/bin/activate
+python -m pdoc \
+  app config.settings models.user \
+  routes.deps routes.profile routes.map routes.match routes.interactions \
+  services.map.contracts services.map.fetcher services.map.distance \
+  services.map.projector services.map.validation services.map.writer \
+  services.map.ego services.map.pipeline services.map.scheduler \
+  services.map.lock services.map.diagnostics \
+  services.matching.embedder services.matching.similarity services.matching.scoring \
+  --output-dir ../docs/api
+```
+
+## License
+
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.

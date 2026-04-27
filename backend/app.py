@@ -1,7 +1,12 @@
-# MAIN APP FILE
-# SINGLE WORKER CONSTRAINT: Always run with `uvicorn app:app --reload`.
-# Multi-worker mode (--workers N) causes APScheduler to fire N times per trigger.
-# See backend/services/map/scheduler.py for full documentation.
+"""SixDegrees FastAPI application entry point.
+
+Registers all routers and starts the APScheduler daily pipeline job via a
+FastAPI lifespan context manager.
+
+Single-worker constraint: always run with ``uvicorn app:app --reload``.
+Multi-worker mode causes APScheduler to fire N times per trigger.
+See ``services.map.scheduler`` for details.
+"""
 
 import os
 from contextlib import asynccontextmanager
@@ -16,11 +21,10 @@ from services.map.scheduler import setup_scheduler
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Start APScheduler on FastAPI startup
+    """FastAPI lifespan context: start APScheduler on startup, shut it down on exit."""
     scheduler = setup_scheduler()
     scheduler.start()
     yield
-    # Shutdown APScheduler cleanly on FastAPI shutdown
     scheduler.shutdown()
 
 

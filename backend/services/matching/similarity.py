@@ -1,5 +1,8 @@
-# Per-field similarity functions.
-# All return a float in [0, 1]. Pure functions — no I/O.
+"""Per-field similarity functions for user profile matching.
+
+All functions return a float in [0, 1]. They are pure functions with no I/O
+or side effects, which makes them straightforward to unit test in isolation.
+"""
 
 # Simple suffix-stripping stem for interests.
 # Unifies common variants: cooking/cook, hiking/hike, running/run, etc.

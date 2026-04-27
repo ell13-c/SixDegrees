@@ -1,3 +1,5 @@
+"""Tests for services/map/fetcher.py — fetch() data retrieval and PipelineInput construction."""
+
 from unittest.mock import MagicMock, patch
 
 from models.user import UserProfile

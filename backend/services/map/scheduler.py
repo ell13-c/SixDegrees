@@ -22,6 +22,12 @@ _UTC_MINUTE = 0
 
 
 async def _run_job() -> None:
+    """APScheduler job callback that fires the global pipeline once per day.
+
+    Skips execution if ``GLOBAL_COMPUTE_ENABLED`` is ``False`` or if the
+    file-based lock is already held (guards against duplicate fires in edge
+    cases where the scheduler fires more than once).
+    """
     if not GLOBAL_COMPUTE_ENABLED:
         logger.info("Global compute skipped (GLOBAL_COMPUTE_ENABLED=False)")
         diagnostics.record_run(
@@ -42,6 +48,15 @@ async def _run_job() -> None:
 
 
 def setup_scheduler() -> AsyncIOScheduler:
+    """Create and configure the APScheduler instance.
+
+    Registers ``_run_job`` on a daily UTC 00:00 cron trigger.
+    The caller (FastAPI lifespan in ``app.py``) is responsible for calling
+    ``scheduler.start()`` and ``scheduler.shutdown()``.
+
+    Returns:
+        AsyncIOScheduler: Configured but not yet started scheduler instance.
+    """
     scheduler = AsyncIOScheduler()
     scheduler.add_job(
         _run_job,

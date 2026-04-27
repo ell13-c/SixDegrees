@@ -1,9 +1,35 @@
+"""Builds the ego-centric map view for a single user.
+
+Reads precomputed global coordinates from ``user_positions`` and
+translates them so the requesting user sits at (0, 0). Each visible
+node is tagged with its friendship tier (1, 2, or 3) so the frontend
+can render concentric rings.
+"""
+
 from fastapi import HTTPException
 from config.settings import get_supabase_client
 from services.map.contracts import EgoMapNode, EgoMapResponse
 
 
 def build_ego_map(requester_id: str) -> EgoMapResponse:
+    """Build an ego-centric map response for the given user.
+
+    Reads all positions from ``user_positions``, fetches the requester's
+    social graph up to 3 degrees via the ``extended_friends`` Supabase RPC,
+    translates every coordinate so the requester is at (0, 0), and assigns
+    tier labels.
+
+    Args:
+        requester_id: UUID of the user opening the map.
+
+    Returns:
+        EgoMapResponse: Tiered, ego-translated coordinate list with a
+        ``computed_at`` timestamp from the latest pipeline run.
+
+    Raises:
+        HTTPException 404: If the requester has no row in ``user_positions``
+            (map has not been computed yet for this user).
+    """
     sb = get_supabase_client()
 
     positions = {

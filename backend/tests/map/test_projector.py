@@ -1,3 +1,5 @@
+"""Tests for services/map/projector.py — UMAP 2D projection output shape, dtype, and determinism."""
+
 import numpy as np
 import pytest
 from unittest.mock import patch

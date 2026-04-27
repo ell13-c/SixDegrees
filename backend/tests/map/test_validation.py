@@ -1,3 +1,5 @@
+"""Tests for services/map/validation.py — coordinate shape and NaN/Inf guards."""
+
 import numpy as np
 import pytest
 from services.map.validation import validate_output

@@ -1,4 +1,16 @@
-"""Pipeline entry point — run global coordinate recompute."""
+"""Global coordinate pipeline orchestrator.
+
+Chains the five pipeline stages in order:
+
+1. ``fetcher.fetch()`` -- load all profiles and interactions from Supabase.
+2. ``distance.build_combined_distance()`` -- build the N x N distance matrix.
+3. ``projector.project()`` -- reduce to 2D with UMAP.
+4. ``validation.validate_output()`` -- sanity-check the UMAP output.
+5. ``writer.write()`` -- normalise and upsert coordinates.
+
+A ``pipeline_runs`` record is written on both success and failure for
+observability.
+"""
 import time
 from services.map.fetcher import fetch
 from services.map.distance import build_combined_distance
@@ -10,6 +22,19 @@ from services.map.contracts import PipelineInput, PipelineResult
 
 
 def run() -> PipelineResult:
+    """Execute the full global coordinate pipeline.
+
+    Fetches all data, builds the combined distance matrix, runs UMAP,
+    validates and writes results, and records a diagnostics entry.
+
+    Returns:
+        PipelineResult: Ordered user IDs, 2D coordinates, interaction edge
+        count, and total wall-clock duration.
+
+    Raises:
+        Exception: Re-raises any exception after recording a ``failed`` run
+            in ``pipeline_runs``.
+    """
     start = time.time()
     data: PipelineInput | None = None
     try:

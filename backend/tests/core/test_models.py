@@ -1,3 +1,5 @@
+"""Tests for models/user.py — UserProfile field defaults and validation."""
+
 from models.user import UserProfile
 
 def test_userprofile_fields():
