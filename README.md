@@ -1,7 +1,5 @@
 # SixDegrees
 
-**Live app: https://six-degrees-omega.vercel.app**
-
 A social networking app built around a 2D People Map. Users are plotted in space based on profile similarity and interaction history. The closer two people are on the map, the more similar they are. Matching uses UMAP dimensionality reduction over a combined profile distance + interaction distance matrix.
 
 ## Try It Out
